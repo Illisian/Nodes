@@ -1,0 +1,19 @@
+{
+  "name": "nodes",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "coffee app.coffee"
+  },
+  "dependencies": {
+    "express": "3.4.0",
+    "less-middleware": "*",
+    "coffee-script": "*",
+    "mongojs": "*",
+    "cheerio": "*",
+    "extend": "*",
+    "consolidate": "*",
+    "ejs": "*",
+    "jade": "*"
+  }
+}
