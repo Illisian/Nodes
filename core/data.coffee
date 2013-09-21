@@ -1,11 +1,7 @@
 mongojs = require "mongojs"
 class Data
-  constructor: () ->
-    @db = mongojs('127.0.0.1/nodes', ['layouts', 'sublayouts', 'pages']);
-    @paths = {
-      layout: __dirname + '/../layouts/'
-      sublayout: __dirname + '/../sublayouts/'
-    }
+  constructor: (@config) ->
+    @db = mongojs("#{@config.database.ip}/#{@config.database.name}", ['layouts', 'sublayouts', 'pages']);
   getSublayout: (id, next) =>
     @db.sublayouts.findOne { _id:mongojs.ObjectId(id) }, (err,doc) =>
       next doc;

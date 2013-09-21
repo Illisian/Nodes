@@ -1,38 +1,50 @@
-
 ###
 Module dependencies.
 ###
-express = require("express")
-#routes = require("./routes")
-#user = require("./routes/user")
+express = require "express"
 fs = require "fs"
-http = require("http")
-path = require("path")
-unixsock = "/tmp/clive.sock";
-fs.unlink unixsock, (err) ->
-  app = express()
-  app.enable('trust proxy'); #for nginx proxy
-  # all environments
-  app.set "port", unixsock #process.env.PORT or 3000
-  app.use express.favicon()
-  app.use express.logger("dev")
-  app.use express.bodyParser()
-  app.use express.methodOverride()
-  app.use express.cookieParser("your secret here")
-  app.use express.session({
-    secret: 'keyboard cat',
-    key: 'sid',
-    #cookie: {httpOnly: true, secure: true}
-    cookie: {httpOnly: true}
-  })
-  #app.use app.router
-  app.use require("less-middleware")(src: __dirname + "/public")
-  app.use require("./core/router")
-  app.use express.static(path.join(__dirname, "public"))
-  app.use express.errorHandler()  if "development" is app.get("env")
-  http.createServer(app).listen app.get("port"), ->
-    setTimeout () ->
-      fs.chmod unixsock, 0x777, (callback) ->
-        console.log "Express server listening on port " + app.get("port")
-      , 2000
+http = require "http"
+path = require "path"
 
+nodes_config = require "./config"
+nodes_router = require "./core/router"
+nodes_data = require "./core/data"
+
+app = express()
+
+cfg = new nodes_config app;
+data = new nodes_data cfg
+router = new nodes_router cfg, data
+
+unlink = (next) ->
+  fs.unlink cfg.host.port, (err) ->
+    next()
+freeforall = (next) ->
+  setTimeout () ->
+    fs.chmod cfg.host.port, 0x777, () ->
+      next();
+    , 2000
+
+finish = (app) ->
+  console.log "Nodes[express server] is listening on port " + app.get("port")
+
+
+init = (next) ->
+  app.set "port", cfg.host.port 
+  for setting in cfg.express.enable then app.enable(setting)
+  for setting in cfg.express.use then app.use(setting)
+  app.use router.processRequest
+  app.use express.static(path.join(__dirname, "public"))
+  http.createServer(app).listen app.get("port"), ->
+    if cfg.host.is_sock
+      freeforall () ->
+        finish(app);
+    else
+      finish(app);
+
+# Start Up 
+if cfg.host.is_sock
+  unlink () ->
+    init();
+else
+  init();
