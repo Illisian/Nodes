@@ -9,7 +9,7 @@ class Config
     }
     @database = {
       ip: "127.0.0.1"
-      name: "nodes"
+      name: "nodes2"
     }
     @paths = {
       layout: __dirname + '/layouts/'

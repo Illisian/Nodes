@@ -9,10 +9,11 @@
     "express": "3.4.0",
     "less-middleware": "*",
     "coffee-script": "*",
-    "mongojs": "*",
+    "mongoose": "*",
     "cheerio": "*",
     "extend": "*",
     "consolidate": "*",
+    "glob": "*",
     "ejs": "*",
     "jade": "*"
   }
