@@ -3,8 +3,6 @@ express = require "express"
 class Config
   constructor: (@app) ->
     @base_dir =  __dirname;
-    @sites = [ "./app/" ]
-    
     @host = {
       ip: null
       is_sock: true
@@ -33,11 +31,5 @@ class Config
         
       
     }
-###    
-    @paths = {
-      layout: './layouts/'
-      sublayout: './sublayouts/'
-    }
-### 
 
 module.exports = Config

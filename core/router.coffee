@@ -11,10 +11,10 @@ class Router
     if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
       return next();
     uri = url.parse "http://#{req.headers.host}#{req.originalUrl}"; # this is the only place i could find.. am using nginx and unix socks
-    console.log "Request for #{uri.hostname}";
+    #console.log "Request for #{uri.hostname}";
     @data.model.site.findOne { hosts: uri.hostname }, (err, site) =>
       if site?
-        console.log "Site found";
+        #console.log "Site found";
         filter = { site: site._id, path: uri.pathname }
         @data.model.page.find filter, (err, pages) =>
           if pages.length > 0

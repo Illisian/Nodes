@@ -8,13 +8,13 @@ class Pages
   constructor: (@data) ->
     
   getChildren: (page, callback) =>
-    @data.model.page.find({ parent: page._id }, callback);
+    @data.model.page.find({ parent: page._id }, null, { sort: { index: 'desc' } }, callback);
 
 class Sites
   constructor: (@data) ->
     
   getRootPage: (site, cb) =>
-    @data.model.page.find({ _id: site.root }, cb);
+    @data.model.page.findOne({ _id: site.root }, cb);
     
 
 class Database

@@ -10,7 +10,7 @@ nodes_config = require "./config"
 nodes_router = require "./core/router"
 nodes_database = require "./core/database"
 nodes_util = require "./core/util"
-demo_app = require("./demo/app")
+demo_app = require("./illisian/app")
 app = express()
 
 cfg = new nodes_config app;

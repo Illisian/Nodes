@@ -23,6 +23,7 @@ Site = new Schema {
 
 Page = new Schema {
   site: { type: Schema.Types.ObjectId, index: true }
+  parent: { type: Schema.Types.ObjectId, index: true }
   name: { type: String, required: true, index: true }
   index: { type: Number }
   path: { type: String, required: true, index: true }

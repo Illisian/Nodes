@@ -6,17 +6,14 @@ paths = require 'path'
 class Renderer
   constructor: (@config, @data, @site) ->
     @sublayoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.sublayout}";
-    @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}";;    
-    
-    #@sublayoutPath = @config.paths.sublayout;
-    #@layoutPath = @config.paths.layout;
+    @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}"; 
   processPage: (page, next) =>
     @context = { page: page, site: @site, data: @data };
     if @context.page.fields?
       @context.fields = extend(true, @context.fields, @context.page.fields)
     if @context.site.fields?
       @context.fields = extend(true, @context.fields, @context.site.fields)
-    
+    @context.fields.context = @context;
     @data.model.layout.find { _id: page.layout }, (err, layouts) =>
       if layouts.length > 0
         layout = layouts[0];
@@ -26,7 +23,7 @@ class Renderer
           @context.$ = cheerio.load @context.html
           @processSublayouts([].concat(@context.page.sublayouts), () =>
             @processFields( () =>
-              @context.$('[nodes-control]').removeAttr("nodes-control")
+              @context.$('[nodes-sublayout]').removeAttr("nodes-sublayout")
               @context.$('[nodes-field]').removeAttr("nodes-field")
               @context.$('[nodes-placeholder]').removeAttr("nodes-placeholder")
               @context.html = @context.$.html();
@@ -44,6 +41,17 @@ class Renderer
       #console.log "processSublayoutAttributes refsl invalid"
       return @processSublayoutAttributes(remaining, finish);
     name = @context.$(refsl).attr('nodes-sublayout');
+    
+    attributes = @context.$(refsl).attr();
+    
+    field_regex = /^nodes-sublayout-field-.*$/
+    for key of attributes
+      result = key.match(field_regex);
+      if result?
+        fieldname = key.replace(field_regex, "");
+        fielddata = @context.$(refsl).attr(key);
+        @context.fields[fieldname] = fielddata;
+
     #console.log "processSublayoutAttributes processControl";
     @processControl(@sublayoutPath, name, (control) =>
       #console.log "processSublayoutAttributes processControl append";
