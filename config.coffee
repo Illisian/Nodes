@@ -2,6 +2,9 @@ express = require "express"
 
 class Config
   constructor: (@app) ->
+    @base_dir =  __dirname;
+    @sites = [ "./app/" ]
+    
     @host = {
       ip: null
       is_sock: true
@@ -10,10 +13,6 @@ class Config
     @database = {
       ip: "127.0.0.1"
       name: "nodes2"
-    }
-    @paths = {
-      layout: __dirname + '/layouts/'
-      sublayout: __dirname + '/sublayouts/'
     }
     @express = {
       enable: ["trust-proxy"]
@@ -34,6 +33,11 @@ class Config
         
       
     }
-
+###    
+    @paths = {
+      layout: './layouts/'
+      sublayout: './sublayouts/'
+    }
+### 
 
 module.exports = Config

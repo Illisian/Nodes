@@ -9,15 +9,22 @@ Sublayout = new Schema {
 }
 Site = new Schema {
   name: { type: String, required: true }
-  host: { type: String, required: true, index: true }
+  hosts: []
   root: { type: Schema.Types.ObjectId }
   fields: { type: Schema.Types.Mixed }
+  paths: {
+    base: { type: String, required: true }
+    layout: { type: String, required: true }
+    sublayout: { type: String, required: true }
+    content: { type: String, required: true }
+  }
 }
 
 
 Page = new Schema {
   site: { type: Schema.Types.ObjectId, index: true }
   name: { type: String, required: true, index: true }
+  index: { type: Number }
   path: { type: String, required: true, index: true }
   layout: { type: Schema.Types.ObjectId }
   hasChildren:  { type: Boolean }
@@ -28,14 +35,7 @@ Page = new Schema {
   }]
   fields: { type: Schema.Types.Mixed }
 }
-###
-Page.methods.getChildren = (callback) ->
-  (mongoose.model('page', Page)).find({ parent: this._id }, callback);
 
-Site.methods.getRootPage = (cb) ->
-  #console.log util.inspect(this);
-  (mongoose.model('page', Page)).find({ _id: this.root }, cb);
-###
 module.exports = {
   Layout: Layout
   Sublayout: Sublayout

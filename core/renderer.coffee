@@ -5,8 +5,11 @@ consolidate = require 'consolidate'
 paths = require 'path'
 class Renderer
   constructor: (@config, @data, @site) ->
-    @sublayoutPath = @config.paths.sublayout;
-    @layoutPath = @config.paths.layout;
+    @sublayoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.sublayout}";
+    @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}";;    
+    
+    #@sublayoutPath = @config.paths.sublayout;
+    #@layoutPath = @config.paths.layout;
   processPage: (page, next) =>
     @context = { page: page, site: @site, data: @data };
     if @context.page.fields?

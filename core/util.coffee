@@ -1,9 +1,18 @@
 glob = require "glob"
+fs = require "fs"
 
 class Util
   constructor: (@config, @database) ->
 
-
+  unlink: (path, next) ->
+    fs.unlink path, (err) ->
+      next()
+  freeforall: (path, next) ->
+    setTimeout () ->
+      fs.chmod path, 0x777, () ->
+        next();
+    , 2000
+  
   syncLayouts: (next) =>
     @sync @config.paths.layout, @database.layouts
     #@syncFromDirectory @config.paths.layout, @database.layouts
@@ -32,10 +41,7 @@ class Util
             console.log "[sync] Removed Entry", doc
             data.remove doc
     )
-    
-  createDemo: (next) =>
-    
-    
+
   readDirectory: (path,name, next) ->
     console.log "[readDir] #{name}";
     glob "#{name}.coffee", {cwd: path}, (err, files) ->
@@ -43,4 +49,7 @@ class Util
         throw err;
       list = for f in files then f.split(".")[0]
       next list
+
+
+
 module.exports = Util;
