@@ -12,6 +12,12 @@ class Config
       ip: "127.0.0.1"
       name: "nodes2"
     }
+    @apps = [
+      "illisian"
+    ]
+      
+      
+
     @express = {
       enable: ["trust-proxy"]
       use: [
@@ -26,7 +32,7 @@ class Config
           #cookie: {httpOnly: true, secure: true}
           cookie: {httpOnly: true}
         })
-        express.errorHandler() if "development" is @app.get("env")
+        #express.errorHandler() if "development" is @app.get("env")
       ]
         
       

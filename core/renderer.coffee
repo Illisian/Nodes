@@ -1,130 +1,123 @@
+
+Promise = require 'bluebird'
+
+
 extend = require 'extend'
-util = require 'util'
+u = require 'util'
 cheerio = require 'cheerio'
 consolidate = require 'consolidate'
 paths = require 'path'
+
+
+
 class Renderer
-  constructor: (@config, @data, @site) ->
+  constructor: (@core, @site) ->
+    {@config, @db} = @core;
     @sublayoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.sublayout}";
     @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}"; 
-  processPage: (page, next) =>
-    @context = { page: page, site: @site, data: @data };
-    if @context.page.fields?
-      @context.fields = extend(true, @context.fields, @context.page.fields)
-    if @context.site.fields?
-      @context.fields = extend(true, @context.fields, @context.site.fields)
-    @context.fields.context = @context;
-    @data.model.layout.find { _id: page.layout }, (err, layouts) =>
-      if layouts.length > 0
-        layout = layouts[0];
-        @processControl(@layoutPath, layout.name, (control) =>
-          #console.log "start layout processing";
-          @context.html = control.html;
-          @context.$ = cheerio.load @context.html
-          @processSublayouts([].concat(@context.page.sublayouts), () =>
-            @processFields( () =>
-              @context.$('[nodes-sublayout]').removeAttr("nodes-sublayout")
-              @context.$('[nodes-field]').removeAttr("nodes-field")
-              @context.$('[nodes-placeholder]').removeAttr("nodes-placeholder")
-              @context.html = @context.$.html();
-              next @context.html;
-            )
-          )
-        )
+  processPage: (page) =>
+    return new Promise (resolve, reject) =>
+      @page = page;
+      if @page.fields?
+        @fields = extend(true, @fields, @page.fields)
+      if @site.fields?
+        @fields = extend(true, @fields, @site.fields)
+      @db.logic.layout.findOne({ _id: page.layout.id }).then (layout) =>
+        if layout?
+          return @processControl(@layoutPath,  page.layout.attributes || {} , layout.name).then (control) =>
+            #console.log "start layout processing";
+            @html = control.html;
+            @$ = cheerio.load @html
+            return @processSublayouts(@page.sublayouts).then () =>
+              return @processSublayoutTags().then () =>
+                return @processFields().then () =>
+                  @$('[nodes-sublayout]').removeAttr("nodes-sublayout")
+                  @$('[nodes-field]').removeAttr("nodes-field")
+                  @$('[nodes-placeholder]').removeAttr("nodes-placeholder")
+                  @html = @$.html();
+                  resolve(@html);
+        else
+          reject();
+  processFields: () =>
+    return new Promise (resolve, reject) =>
+      if @fields?
+        arr = @$('[nodes-field]');
+        for i in arr
+          fieldName = @$(i).attr("nodes-field")
+          if fieldName of @fields
+            fieldContents = @fields[fieldName]
+            @$(i).prepend(fieldContents)
+      resolve();
   
-  processSublayoutAttributes: (remaining, finish) =>
-    if remaining.length <= 0
-      #console.log "processSublayoutAttributes finished";
-      return finish()
-    refsl = remaining.shift();
-    if not refsl? 
-      #console.log "processSublayoutAttributes refsl invalid"
-      return @processSublayoutAttributes(remaining, finish);
-    name = @context.$(refsl).attr('nodes-sublayout');
-    
-    attributes = @context.$(refsl).attr();
-    
-    field_regex = /^nodes-sublayout-field-.*$/
-    for key of attributes
-      result = key.match(field_regex);
-      if result?
-        fieldname = key.replace(field_regex, "");
-        fielddata = @context.$(refsl).attr(key);
-        @context.fields[fieldname] = fielddata;
-
-    #console.log "processSublayoutAttributes processControl";
-    @processControl(@sublayoutPath, name, (control) =>
-      #console.log "processSublayoutAttributes processControl append";
-      @context.$(refsl).append(control.html);
-      @processSublayoutAttributes(remaining, finish);
-    )
+  processSublayoutTags: () =>
+    return new Promise (resolve, reject) =>
+      sublayoutTags  = @$('[nodes-sublayout]').toArray();
+      promises = @sublayoutTagProcessor(sublayoutTag) for sublayoutTag in sublayoutTags
+      Promise.all(promises).then () =>
+        resolve();
   
-  checkForSublayoutAttributes: (finish) =>
-    #console.log "checkForSublayoutAttributes";
-    controlrefs = @context.$('[nodes-sublayout]').toArray();
-    if controlrefs.length > 0
-      #console.log "processing attribute";
-      @processSublayoutAttributes(controlrefs, finish);
-    else  
-      return finish()
+  sublayoutTagProcessor: (sublayoutTag) =>
+    return new Promise (resolve, reject) =>
+      name = @$(sublayoutTag).attr('nodes-sublayout');
+      attributes = @$(sublayoutTag).attr();
+      field_regex = /^nodes-sublayout-attr-.*$/
+      replace_regex = /^nodes-sublayout-attr-/
+      attr = {};
+      for key of attributes
+        result = key.match(field_regex);
+        if result?
+          fieldname = key.replace(replace_regex, "");
+          fielddata = @$(refsl).attr(key);
+          attr[fieldname] = fielddata;
+      @processControl(@sublayoutPath,attr, name).then (control) =>
+        @$(sublayoutTag).append(control.html);
+        resolve();
+  
+  processSublayouts: (sublayouts) =>
+    return new Promise (resolve, reject) =>
+      promises = @sublayoutProcessor(sublayout) for sublayout in sublayouts
+      Promise.all(promises).then () =>
+        resolve();
+  
+  sublayoutProcessor: (sublayoutData) =>
+    return new Promise (resolve, reject) =>
+      @db.logic.sublayout.findOne({ _id: sublayoutData.id }).then (sublayout) =>
+        if sublayout?
+          return @processControl(@sublayoutPath, sublayoutData.attributes || {}, sublayout.name).then (control) =>
+            #console.log "processSublayouts processControl append";
+            @$('[nodes-placeholder="'+sublayoutData.placeholder+'"]').append(control.html);
+            resolve();
+        else
+          reject();
 
-
-
-  processSublayouts: (remaining, finish) =>
-    if remaining.length <= 0
-      #console.log "processSublayouts finished", util.inspect(remaining), util.inspect(finish);
-      return @checkForSublayoutAttributes(finish);
-    refsl = remaining.shift();
-    if not refsl?
-      #console.log "processSublayouts refsl invalid"
-      return @processSublayouts(remaining, finish);
-    @data.model.sublayout.findOne { _id: refsl.id }, (err, sublayout) =>
-      #console.log "processSublayouts findOne callback";
-      if not sublayout?
-        return @processSublayouts(remaining, finish);
-      else
-        @processControl(@sublayoutPath, sublayout.name, (control) =>
-          #console.log "processSublayouts processControl append";
-          @context.$('[nodes-placeholder="'+refsl.placeholder+'"]').append(control.html);
-          @processSublayouts(remaining, finish);
-        )
-
-  processFields: (next) =>
-    if @context.fields?
-      arr = @context.$('[nodes-field]');
-      for i in arr
-        fieldName = @context.$(i).attr("nodes-field")
-        if fieldName of @context.fields
-          fieldContents = @context.fields[fieldName]
-          @context.$(i).prepend(fieldContents)
-    next();
-    
-  processControl:(path, controlName, next) =>
-    controlPath = path + controlName;
-    control = require controlPath
-    jsfile = new control
-    jsfile.context = @context # this sets page and fields
-    dir = paths.dirname(path + controlName);
-    viewPath = "#{dir}/views/#{jsfile.view.file}";
-    #console.log "processControl onData start";
-    jsfile.onData(() =>
-      #console.log "processControl onData callback";
-      if jsfile.fields?
-        @context.fields = extend(true, @context.fields, jsfile.fields)
-      #console.log "processControl renderFile #{viewPath}", util.inspect(@context.fields);
-      @renderFile(viewPath, jsfile.view.renderer, @context.fields, (html) =>
-        jsfile.html = html;
-        #console.log "processControl renderFile";
-        jsfile.onHtml () =>
-          #console.log "processControl onHtml";
-          next(jsfile);
-      )
-    )
+  
+  processControl:(path, attributes, controlName) =>
+    return new Promise (resolve, reject) =>
+      controlPath = path + controlName;
+      control = require controlPath
+      jsfile = new control
+      extend(true, jsfile, this);
+      jsfile.attr = attributes;
+      #jsfile.fields = @fields
+      #jsfile.db = @db;
+      jsfile.renderer = this # this sets page and fields
+      dir = paths.dirname(path + controlName);
+      viewPath = "#{dir}/views/#{jsfile.view.file}";
+      #console.log "processControl onData start";
+      jsfile.onData () =>
+        @renderFile(viewPath, jsfile.view.renderer, jsfile).then (html) =>
+          jsfile.html = html;
+          #console.log "processControl renderFile";
+          jsfile.onHtml () =>
+            #console.log "processControl onHtml";
+            resolve(jsfile);
+            
   renderFile: (path, renderer, fields, next) =>
-    consolidate[renderer](path, fields, (err, html) =>
-      if err?
-        throw err;
-      next(html)
-    )
+    return new Promise (resolve, reject) =>
+      consolidate[renderer] path, fields, (err, html) =>
+        if err?
+          throw err;
+        resolve(html)
+      
 
 module.exports = Renderer

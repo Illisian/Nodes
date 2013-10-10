@@ -27,12 +27,17 @@ Page = new Schema {
   name: { type: String, required: true, index: true }
   index: { type: Number }
   path: { type: String, required: true, index: true }
-  layout: { type: Schema.Types.ObjectId }
+  layout: { 
+      id: { type: Schema.Types.ObjectId }
+      attributes: { type: Schema.Types.Mixed }
+  }
   hasChildren:  { type: Boolean }
   isRoot: { type: Boolean }
   sublayouts: [{
     placeholder: { type: String }
     id: { type: Schema.Types.ObjectId }
+    attributes: { type: Schema.Types.Mixed }
+    index: { type: Number }
   }]
   fields: { type: Schema.Types.Mixed }
 }
