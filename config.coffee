@@ -1,7 +1,7 @@
 express = require "express"
 
 class Config
-  constructor: (@app) ->
+  constructor: () ->
     @base_dir =  __dirname;
     @host = {
       ip: null
@@ -16,14 +16,13 @@ class Config
       "illisian"
     ]
       
-      
+    @renderModules = [ "fields", "controlregistry" ]
 
     @express = {
       enable: ["trust-proxy"]
       use: [
         express.favicon()
         express.logger("dev")
-        #express.bodyParser()
         #express.methodOverride()
         express.cookieParser("your secret here")
         express.session({

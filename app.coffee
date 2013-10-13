@@ -12,10 +12,10 @@ Promise = require "bluebird"
 Promise.longStackTraces();
 class MainApp
   constructor: () ->
-    @config = new config @express;
+    @config = new config;
     @db = new database @config
     #@router = new router @config, @db
-    
+    @log = util.log;
     @static = [];
     @apps = [];
     
@@ -40,6 +40,7 @@ class MainApp
       @express.set "port", @config.host.port 
       for setting in @config.express.enable then @express.enable(setting)
       for setting in @config.express.use then @express.use(setting)
+      @express.use express.bodyParser()
       @express.use @processRequest
       http.createServer(@express).listen @express.get("port"), =>
         util.log "express is now listening on #{@config.host.port}";
@@ -68,20 +69,21 @@ class MainApp
       
       
   processRequest: (req, res, next) =>
-    if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
-      return next();
+   # if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
+   #   return next();
     uri = url.parse "http://#{req.headers.host}#{req.originalUrl}"; # this is the only place i could find.. am using nginx and unix socks
-    #console.log "Request for #{uri.hostname}";
+
     @db.logic.site.findOne({ hosts: uri.hostname }).then (site) =>
       if site?
         #console.log "Site found";
         filter = { site: site._id, path: uri.pathname }
         @db.logic.page.findOne(filter).then((page) =>
           if page?
-            util.log "page found";
-            
-            renderer = new renderer(this, site);
-            renderer.processPage(page).then((html) =>
+            @log "Creating Renderer";
+            r = new renderer(this, site, page, req, res)
+            @log "Processing Page";
+            return r.render().then((html) =>
+              @log "sending html";
               res.send html
             ).catch (err) ->
               util.log err
