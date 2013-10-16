@@ -1,12 +1,8 @@
-class contact
+Promise = require("bluebird");
+Control = require("../../core/abstract/control");
+
+class Contact extends Control
   controls: [ "#txtEmailAddress" ]
   view: { file: 'contact.ejs', renderer: 'ejs' }
-  constructor: () ->
-    
-  onData: (next) => # provide fields
-    next();
-  onHtml: (next) => #provide html
-    next();
 
-
-module.exports = contact;
+module.exports = Contact;

@@ -1,11 +1,9 @@
-class content
+Promise = require("bluebird");
+Control = require("../../core/abstract/control");
+
+
+class Content extends Control
   view: { file: 'content.ejs', renderer: 'ejs' }
-  constructor: () ->
-    
-  onData: (next) => # provide fields
-    next();
-  onHtml: (next) => #provide html
-    next();
 
 
-module.exports = content;
+module.exports = Content;

@@ -1,21 +1,24 @@
 util = require "util"
+Promise = require("bluebird");
+Control = require("../../../core/abstract/control");
 
-class nav
+class Nav extends Control
   view: { file: 'nav.ejs', renderer: 'ejs' }
-  constructor: () ->
-    
-  onData: (next) => # provide fields
-    @db.logic.site.getRootPage(@site).then (page) =>
+  onControlDataBind: (next) => # provide fields
+    @log "onControlDataBind getRootPage"
+    @renderer.db.logic.site.getRootPage(@renderer.site).then (page) =>
+      @log "onControlDataBind getRootPage page response"
       if page?
-        return @db.logic.page.getChildren(page).then (children) =>
+        @log "onControlDataBind getChildren children"
+        @renderer.db.logic.page.getChildren(page).then (children) =>
+          @log "onControlDataBind getChildren children response"
           pages = [page].concat(children);
           @fields.pages = pages;
-          #console.log "firing next";
-          next();
+          @log "Nav Fields Set!";
+          return next();
       else
-        next();
-    
-  onHtml: (next) => #provide html
-    next();
+        @log "Nav onControlDataBind page not found";
+        return next();
 
-module.exports = nav;
+
+module.exports = Nav;

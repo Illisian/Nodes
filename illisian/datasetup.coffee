@@ -1,4 +1,4 @@
-util = require "../core/util";
+util = require "../core/func";
 Promise = require "bluebird";
 class DataSetup
   constructor: (@main) ->

@@ -4,19 +4,18 @@ Promise.longStackTraces();
 
 extend = require 'extend'
 u = require 'util'
-util = require './util'
+func = require './func'
 cheerio = require 'cheerio'
-consolidate = require 'consolidate'
 paths = require 'path'
 
-
+controlProcessor = require './controlProcessor'
 
 class Renderer
   constructor: (@core, @site, @page, @req, @res) ->
     {@config, @db, @log} = @core;
     @sublayoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.sublayout}";
     @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}"; 
-    @$ = cheerio.load "";
+    @$ = cheerio.load "<html></html>";
     @modules = {};
     @modules.instances = [];
     @processModule(modName) for modName in @config.renderModules
@@ -25,46 +24,59 @@ class Renderer
     mod = require("./renderModules/#{modname}");
     @modules.instances.push new mod(this);
 
-  onControlProcessedPromises: (control) =>
-    promises = [];
-    for mod in @modules.instances
-      if mod["onControlProcessed"]?
-        promises.push mod.onControlProcessed(control);
-    return Promise.all(promises);
-  
-  onStartPromises: () =>
-    promises = [];
-    for mod in @modules.instances
-      if mod["onStart"]?
-        promises.push mod.onStart(this);
-    return Promise.all(promises);
-  
-  onFinishPromises: () =>
-    promises = [];
-    for mod in @modules.instances
-      if mod["onFinish"]?
-        promises.push mod.onFinish(this);
-    return Promise.all(promises);
   
   render: () =>
-    return @processFields()
-      .then(@onStartPromises)
+    return @createFields()
+      .then(@fireRenderModuleEvent_onPageStart)
       .then(@processLayout)
       .then(@processSublayouts)
       .then(@processSublayoutTags)
-      .then(@onFinishPromises)
+      .then(@fireRenderModuleEvent_onPageFinish)
       .then(@finish).catch (err) =>
-        @log err;
-      
-  finish: () =>
+        @log "Render Error", err;
+  
+  fireRenderModuleEvent_onPageStart: () =>
     return new Promise (resolve, reject) =>
-      @$('[nodes-sublayout]').removeAttr("nodes-sublayout")
-      @$('[nodes-placeholder]').removeAttr("nodes-placeholder")
+      @log "Renderer - fireRenderModuleEvent_onPageStart"
+      promises = []
+      for module in @modules.instances
+        promises.push @fireRenderModuleEvent(module, "onPageStart");
+      @log "Renderer - fireRenderModuleEvent_onPageStart - firing promises"
+      Promise.all(promises).then () =>
+        @log "Renderer - fireRenderModuleEvent_onPageStart - finish"
+        resolve();
+      .catch (err) =>
+        @log err.stack
+        
+  fireRenderModuleEvent_onPageFinish: () =>
+    return new Promise (resolve, reject) =>
+      @log "Renderer - fireRenderModuleEvent_onPageFinish"
+      promises = []
+      for module in @modules.instances
+        promises.push @fireRenderModuleEvent(module, "onPageFinish") 
+      Promise.all(promises).then () =>
+        @log "Renderer - fireRenderModuleEvent_onPageFinish - finish"
+        resolve();
+  
+  fireRenderModuleEvent: (module, eventName) =>
+    return new Promise (resolve, reject) =>
+      if module[eventName]?
+        module[eventName] () =>
+          resolve();
+      else
+        resolve();
+
+  finish: (next) =>
+    return new Promise (resolve, reject) =>
+      @log "Renderer - finish"
+      #@$('[nodes-sublayout]').removeAttr("nodes-sublayout")
+      #@$('[nodes-placeholder]').removeAttr("nodes-placeholder")
       html = @$.html();
       resolve(html);
   
-  processFields:() =>
+  createFields:() =>
     return new Promise (resolve, reject) =>
+      @log "Renderer - processFields"
       if @page.fields?
         @fields = extend(true, @fields, @page.fields)
       if @site.fields?
@@ -73,15 +85,33 @@ class Renderer
   
   processLayout: ()=>
     return new Promise (resolve, reject) =>
+      @log "Renderer - processLayout"
       @db.logic.layout.findOne({ _id: @page.layout.id }).then (layout) =>
         if layout?
-          @processControl(null, @layoutPath,  @page.layout.attributes || {} , layout.name).then (control) =>
+          attr = @page.layout.attributes || {};
+          attr.target = null;
+          @processControl(@layoutPath, attr, layout.name).then (control) =>
+            @log "Renderer - processLayout - finish"
             resolve();
-        else
-          reject();
   
   processSublayoutTags: () =>
-    return Promise.all(@sublayoutTagProcessor(sublayoutTag) for sublayoutTag in @$('[nodes-sublayout]').toArray());
+    return new Promise (resolve, reject) =>
+      promises = []
+      @log "Renderer - processSublayoutTags - start"
+      tagCount = @$('[nodes-sublayout]').length;
+      if tagCount > 0
+        tags = @$('[nodes-sublayout]').toArray();
+        @log "Renderer - processSublayoutTags - tags", tags.length
+        for sublayoutTag in tags
+          promises.push @sublayoutTagProcessor(sublayoutTag);
+        @log "Renderer - processSublayoutTags - promises", promises
+        Promise.all(promises).then () =>
+          @log "Renderer - processSublayoutTags - finish"
+          resolve();
+      else
+        @log "Renderer - processSublayoutTags - no tags found"
+        resolve();
+      
   
   sublayoutTagProcessor: (sublayoutTag) =>
     return new Promise (resolve, reject) =>
@@ -96,58 +126,38 @@ class Renderer
           fieldname = key.replace(replace_regex, "");
           fielddata = @$(refsl).attr(key);
           attr[fieldname] = fielddata;
-          
-      @log "sublayoutTagProcessor", @sublayoutPath, attr, name
-      @processControl(sublayoutTag, @sublayoutPath, attr, name).then (control) =>
+      attr.target = sublayoutTag
+      @processControl(@sublayoutPath, attr, name).then (control) =>
         resolve();
   
   processSublayouts: () =>
-    return Promise.all(@sublayoutProcessor(sublayout) for sublayout in @page.sublayouts)
+    return new Promise (resolve, reject) =>
+      @log "Renderer - processSublayouts"
+      promises = []
+      for sublayout in @page.sublayouts
+        promises.push @sublayoutProcessor(sublayout) 
+      Promise.all(promises).then () =>
+        @log "Renderer - processSublayouts - finish"
+        resolve();
 
   
   sublayoutProcessor: (sublayoutData) =>
     return new Promise (resolve, reject) =>
       @db.logic.sublayout.findOne({ _id: sublayoutData.id }).then (sublayout) =>
         if sublayout?
-          return @processControl('[nodes-placeholder="'+sublayoutData.placeholder+'"]', @sublayoutPath, sublayoutData.attributes || {}, sublayout.name).then (control) =>
+          attr = sublayoutData.attributes || {};
+          attr.target = '[nodes-placeholder="'+sublayoutData.placeholder+'"]'
+          @processControl(@sublayoutPath, attr, sublayout.name).then () =>
+            @log "Renderer - sublayoutProcessor - finished - #{sublayout.name}"
             resolve();
-        else
-          reject();
 
-  
-  processControl:(target, path, attributes, controlName) =>
+  processControl:(path, attributes, controlName) =>
     return new Promise (resolve, reject) =>
-      controlPath = path + controlName;
-      control = require controlPath
-      jsfile = new control
-      extend(true, jsfile, this);
-      jsfile.attr = attributes;
-      jsfile.renderer = this # this sets page and fields
-      dir = paths.dirname(path + controlName);
-      viewPath = "#{dir}/views/#{jsfile.view.file}";
-
-      jsfile.onData () =>
-        @renderFile(viewPath, jsfile.view.renderer, jsfile).then (html) =>
-          
-          if target == null
-            @log "Load Cheerio"
-            @$ = cheerio.load html;
-          else 
-            @log "Append Cheerio"
-            @$(target).append(html);
-          jsfile.html = html;
-          #console.log "processControl renderFile";
-          jsfile.onHtml () =>
-            @onControlProcessedPromises(jsfile).then () =>
-              #console.log "processControl onHtml";
-              resolve(jsfile);
-            
-  renderFile: (path, renderer, fields, next) =>
-    return new Promise (resolve, reject) =>
-      consolidate[renderer] path, fields, (err, html) =>
-        if err?
-          throw err;
-        resolve(html)
-      
+      @log "Renderer - processControl - Start"
+      #@path, @attributes, @controlName, @renderer
+      conproc = new controlProcessor path, attributes, controlName, this
+      conproc.process().then () =>
+        @log "Renderer - processControl - End"
+        resolve(conproc.jsfile);
 
 module.exports = Renderer

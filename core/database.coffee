@@ -3,7 +3,7 @@ Promise = require "bluebird"
 #extend = require "extend";
 
 schemas = require "./schemas";
-util = require './util';
+func = require './func';
 u = require 'util';
 
 
@@ -13,7 +13,7 @@ class ModelLogic
       throw "Model Name is not defined";
     if not @schema?
       throw "Schema is not defined";
-    util.log "Init model: #{@modelName}";
+    func.log "Init model: #{@modelName}";
     @model = mongoose.model @modelName, @schema;
   remove: (filter) =>
     return new Promise (resolve, reject) =>
@@ -33,9 +33,9 @@ class ModelLogic
         if err?
           reject(err);
         if result?
-          util.log "findOne [#{@model.modelName}] - [#{result._id}] found", filter
+          func.log "findOne [#{@model.modelName}] - [#{result._id}] found", filter
         else 
-          util.log "findOne [#{@model.modelName}] not found", filter
+          func.log "findOne [#{@model.modelName}] not found", filter
         resolve(result);
 
 
@@ -69,7 +69,7 @@ class Database
     
   init: () =>
     return new Promise (resolve, reject) =>
-      util.log "database init has started"
+      func.log "database init has started"
       @logic = {
         site: new Sites this
         page: new Pages this
@@ -96,7 +96,7 @@ class Database
       .then(@logic.layout.remove({}))
       .then(@logic.sublayout.remove({}))
       .then(() ->
-        util.log("Database has been cleared!");
+        func.log("Database has been cleared!");
         resolve();
       )
 

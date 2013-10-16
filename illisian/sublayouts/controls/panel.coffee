@@ -1,11 +1,7 @@
-class panel
+Promise = require("bluebird");
+Control = require("../../../core/abstract/control");
+
+class Panel extends Control
   view: { file: 'panel.ejs', renderer: 'ejs' }
-  constructor: () ->
-    
-  onData: (next) => # provide fields
-    next();
 
-  onHtml: (next) => #provide html
-    next();
-
-module.exports = panel;
+module.exports = Panel;
