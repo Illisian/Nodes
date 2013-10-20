@@ -28,8 +28,9 @@ class MainApp
     @log = func.log;
     @func = func;
     @static = [];
+    @cache = {};
+    @cache.controls = {}
     @apps = [];
-
   init: () =>
     @unixSockUnlink()
       .then(@expressSetup)
@@ -41,7 +42,7 @@ class MainApp
         @log "An Error has occurred while running init", err;
 
   finished: () =>
-    @log "nodes cms has started";
+    console.log "nodes cms has started";
 
   expressSetup: () =>
     return new Promise (resolve, reject) =>
@@ -99,7 +100,7 @@ class MainApp
           else
             @getStatic site, req, res, next
         .catch (err) =>
-          @log "Process Request", err
+          @log "Process Request #{err.stack}"
       else
         next();
         

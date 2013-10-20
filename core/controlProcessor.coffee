@@ -33,7 +33,8 @@ class ControlProcessor
   process: () =>
     return new Promise (resolve, reject) =>
       @log "ControlProcessor - process - Loading #{@controlPath}";
-      control = require @controlPath
+      control = @renderer.getControl(@controlPath);
+      #control = require @controlPath
       @jsfile = new control();
       #extend(true, jsfile, this); # probally shouldnt do this...
       @jsfile.attr = @attributes;
@@ -42,8 +43,10 @@ class ControlProcessor
       @jsfile.log = @renderer.log;
       @jsfile.viewPath = "#{@dir}/views/#{@jsfile.view.file}";
       @fireEvents().then () =>
+        @html = @jsfile.html;
+        @target = @jsfile.attr.target;
         @log "ControlProcessor - fireEvents Completed. #{@controlPath}";
-        resolve(@jsfile);
+        resolve(this);
       .catch (err) =>
         @log "ControlProcessor - fireEvents Error", err.stack
 module.exports = ControlProcessor

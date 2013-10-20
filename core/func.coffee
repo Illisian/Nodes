@@ -15,14 +15,14 @@ class Util
           resolve();
       , 2000
   @log: () ->
-    console.log "[#{new Date().toUTCString()}]", util.inspect(arguments);
+    console.log "[#{new Date().toUTCString()}]", arguments;
   @objToArr: (obj) ->
     result = []
     for i in [1..arguments.length]
       if obj[arguments[i]]
         result.push obj[arguments[i]];
     return result;
-  
+
     
       
 module.exports = Util;
