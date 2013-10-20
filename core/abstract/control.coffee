@@ -3,18 +3,18 @@ consolidate = require 'consolidate'
 Promise = require 'bluebird'
 
 class Control
-  onControlTemplateRender: (next) =>
-    @log "onControlTemplateRender Start #{@viewPath}, #{@view.renderer}"
-    consolidate[@view.renderer] @viewPath, this, (err, html) =>
-      if err?
-        @log "onControlTemplateRender Error", err
-        throw err;
-      @html = html;
-      next()
-      @log "onControlTemplateRender rendered #{@viewPath}"
-        
-  onControlRender: (next) =>
+  onControlTemplateRender: () =>
+    return new Promise (resolve, reject) =>
+      @log "onControlTemplateRender Start #{@viewPath}, #{@view.renderer}"
+      consolidate[@view.renderer] @viewPath, this, (err, html) =>
+        if err?
+          @log "onControlTemplateRender Error", err
+          return reject(err);
+        @html = html;
+        @log "onControlTemplateRender rendered #{@viewPath}"
+        resolve()
 
-    next();
+#  onControlRender: (next) =>
+#    next();
 
 module.exports = Control

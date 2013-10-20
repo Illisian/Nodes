@@ -13,13 +13,15 @@ controlProcessor = require './controlProcessor'
 class Renderer
   constructor: (@core, @site, @page, @req, @res) ->
     {@config, @db, @log} = @core;
-    @sublayoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.sublayout}";
-    @layoutPath = "#{@config.base_dir}#{@site.paths.base}#{@site.paths.layout}"; 
-    @$ = cheerio.load "<html></html>";
+    @sublayoutPath =  @site.nodes.sublayoutPath;
+    @layoutPath =  @site.nodes.layoutPath;
+    @modulePath =  @site.nodes.modulePath;
     @modules = [];
-    @processModule(modName) for modName in @config.renderModules
+    @processModule("#{__dirname}/renderModules/#{modName}") for modName in @config.renderModules
     @layout = {}
     @sublayouts = []
+    if @site.modules?
+      @processModule("#{@site.nodes.modulePath}#{siteModName}") for siteModName in @site.modules
   
   render: () =>
     return @createFields()
@@ -29,8 +31,9 @@ class Renderer
       .then(@processSublayoutTags)
       .then(@processLoadedControls)
       .then(@fireRenderModuleEvent_onPageFinish)
-      .then(@finish).catch (err) =>
-        @log "Render Error - #{err.stack}";
+      .then(@finish)
+      .catch (err) =>
+        @log "Render Error", err, err.stack;
   
   createFields:() =>
     return new Promise (resolve, reject) =>
@@ -39,22 +42,14 @@ class Renderer
         @fields = extend(true, @fields, @page.fields)
       if @site.fields?
         @fields = extend(true, @fields, @site.fields)
+      @log "Renderer - processFields - Finished"
       resolve();
   
   
   fireRenderModuleEvent_onPageStart: () =>
-    return new Promise (resolve, reject) =>
-      @log "Renderer - fireRenderModuleEvent_onPageStart"
-      promises = []
-      for module in @modules
-        promises.push @fireRenderModuleEvent(module, "onPageStart");
-      @log "Renderer - fireRenderModuleEvent_onPageStart - firing promises"
-      Promise.all(promises)
-        .then () =>
-          resolve();
-        .catch (err) =>
-          @log err.stack
-          
+    @log "fireing Promises - onPageStart";
+    return func.firePromises(0,  @modules, "onPageStart")
+
   processLayout: () =>
     return new Promise (resolve, reject) =>
       @log "Renderer - processLayout"
@@ -65,9 +60,9 @@ class Renderer
           @layout = new controlProcessor @layoutPath, attr, layout.name, this
           @log "Renderer - processLayout - finish"  
           @layout.process().then () =>
-            @log "Renderer - processLayout - Loading Layout Complete", @layout
+            @log "Renderer - processLayout - Loading Layout Complete"
             @$ = cheerio.load @layout.jsfile.html;
-          resolve();
+            resolve();
 
   processSublayouts: () =>
     return new Promise (resolve, reject) =>
@@ -76,9 +71,11 @@ class Renderer
       for sublayout in @page.sublayouts
         promises.push @sublayoutProcessor(sublayout) 
       @log "Renderer - sublayoutProcessor - Found Sublayouts - #{promises.length}"
-      Promise.all(promises).then () =>
+      
+      return Promise.all(promises).then () =>
         @log "Renderer - processSublayouts - finish"
         resolve();
+      , reject
         
   processSublayoutTags: () =>
     return new Promise (resolve, reject) =>
@@ -91,9 +88,10 @@ class Renderer
         for sublayoutTag in tags
           promises.push @sublayoutTagProcessor(sublayoutTag);
         @log "Renderer - processSublayoutTags - promises", promises
-        Promise.all(promises).then () =>
+        return Promise.all(promises).then () =>
           @log "Renderer - processSublayoutTags - finish"
           resolve();
+        , reject
       else
         @log "Renderer - processSublayoutTags - no tags found"
         resolve();
@@ -102,33 +100,22 @@ class Renderer
       @log "Renderer - processLoadedControls - Starting Sublayouts"
       promises = [];
       promises.push s.process() for s in @sublayouts;
-      Promise.all(promises).then (results) =>
+      return Promise.all(promises).then (results) =>
         for s in results
           @log "Renderer - processLoadedControls - Appending Sublayouts #{s.controlPath}", s.html? , s.target?;
           if s.html?
             @$(s.target).append(s.html);
         @log "Renderer - processLoadedControls - End"
         resolve();
+      , (result) =>
+        @log "Renderer - processLoadedControls - Appending Sublayouts failed #{s.controlPath}", s.html? , s.target?;
+        resolve();
             
           
   fireRenderModuleEvent_onPageFinish: () =>
     return new Promise (resolve, reject) =>
-      @log "Renderer - fireRenderModuleEvent_onPageFinish"
-      promises = []
-      for module in @modules
-        promises.push @fireRenderModuleEvent(module, "onPageFinish") 
-      Promise.all(promises).then () =>
-        @log "Renderer - fireRenderModuleEvent_onPageFinish - finish"
-        resolve();
+      func.firePromises(0,  @modules, "onPageFinish", resolve, reject).then(resolve, reject);
   
-  fireRenderModuleEvent: (module, eventName) =>
-    return new Promise (resolve, reject) =>
-      @log "Renderer - fireRenderModuleEvent_onPageStart - firing promises - #{eventName}"
-      if module[eventName]?
-        module[eventName](resolve);
-      else
-        resolve();
-
   finish: (next) =>
     return new Promise (resolve, reject) =>
       @log "Renderer - finish"
@@ -173,37 +160,8 @@ class Renderer
 
   processModule: (modname) =>
     @log "Loading Module #{modname}"
-    mod = @getControl("./renderModules/#{modname}");
-    @modules.push new mod(this);
+    mod = @core.managers.cache.loadNewObject(modname);
+    mod.renderer = this;
+    @modules.push mod;
   
-  getControl: (path) =>
-    if @core.cache.controls[path]?
-      return @core.cache.controls[path];
-    mod = require(path)
-    @core.cache.controls[path] = mod;
-    return mod;
-
-
-###
-if not @html?
-      @log "Html is undefined"
-      next();
-      return;
-    
-    if not @attr.target?
-      @log "Load Cheerio"
-      @renderer.$ = cheerio.load @html;
-    else 
-      @log "Append Cheerio"
-      @renderer.$(@attr.target).append(@html);
-  processControl:(path, attributes, controlName) =>
-    return new Promise (resolve, reject) =>
-      @log "Renderer - processControl - Start #{controlName}"
-      #@path, @attributes, @controlName, @renderer
-      conproc = new controlProcessor path, attributes, controlName, this
-      conproc.process().then () =>
-        @log "Renderer - processControl - End #{controlName}"
-        @controls.push
-        resolve(conproc);
-###
 module.exports = Renderer

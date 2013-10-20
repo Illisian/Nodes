@@ -11,7 +11,7 @@ class ControlRegistry
 #    return new Promise (resolve, reject) =>
 #      resolve();
       
-  onPageFinish: (next) =>
-    next();
+#  onPageFinish: (next) =>
+#    next();
 
 module.exports = ControlRegistry;

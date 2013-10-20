@@ -10,6 +10,7 @@ Sublayout = new Schema {
 Site = new Schema {
   name: { type: String, required: true }
   hosts: []
+  modules: []
   root: { type: Schema.Types.ObjectId }
   fields: { type: Schema.Types.Mixed }
   paths: {
@@ -17,6 +18,7 @@ Site = new Schema {
     layout: { type: String, required: true }
     sublayout: { type: String, required: true }
     content: { type: String, required: true }
+    module: { type: String, required: true }
   }
 }
 

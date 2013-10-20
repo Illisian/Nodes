@@ -2,15 +2,14 @@ config = require "./config"
 renderer = require "./core/renderer";
 database = require "./core/database";
 func = require "./core/func";
+siteManager = require "./core/managers/siteManager";
+cacheManager = require "./core/managers/cacheManager";
 
 extend = require 'extend'
 util = require 'util'
 cheerio = require 'cheerio'
 consolidate = require 'consolidate'
 paths = require 'path'
-
-
-
 
 express = require "express";
 http = require "http";
@@ -22,6 +21,8 @@ Promise.longStackTraces();
 
 class MainApp
   constructor: () ->
+    @managers = {};
+    
     @config = new config;
     @db = new database @config
     #@router = new router @config, @db
@@ -31,6 +32,10 @@ class MainApp
     @cache = {};
     @cache.controls = {}
     @apps = [];
+    @sites = [];
+    
+    @managers.sites = new siteManager(this);
+    @managers.cache = new cacheManager(this);
   init: () =>
     @unixSockUnlink()
       .then(@expressSetup)
@@ -78,40 +83,24 @@ class MainApp
       
       Promise.all(promises).then () =>
         resolve();
-      
+ 
   processRequest: (req, res, next) =>
    # if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
    #   return next();
-    uri = url.parse "http://#{req.headers.host}#{req.originalUrl}"; # this is the only place i could find.. am using nginx and unix socks
-
-    @db.logic.site.findOne({ hosts: uri.hostname }).then (site) =>
-      if site?
-        #console.log "Site found";
-        filter = { site: site._id, path: uri.pathname }
-        return @db.logic.page.findOne(filter).then (page) =>
-          if page?
-            @log "Creating Renderer";
-            r = new renderer(this, site, page, req, res)
-            @log "Processing Page";
-            return r.render().then((html) =>
-              @log "sending html";
-              res.send html
-            )
-          else
-            @getStatic site, req, res, next
-        .catch (err) =>
-          @log "Process Request #{err.stack}"
-      else
-        next();
-        
-  getStatic: (site, req, res, next) => 
-    #if not site.hostname of @static
-    path = "#{@config.base_dir}#{site.paths.base}#{site.paths.content}";
-    #console.log "getStatic path #{path}";
-    if not @static[site._id]?
-      @static[site._id] = express.static(path)
-    @static[site._id](req, res, next);
-    
+    @managers.sites.processRequest(req, res).then (html) =>
+      #success
+      @log "processRequest", html?;
+      if html?
+        @log "sending html";
+        res.send html
+        return;
+      next();
+    , () =>
+      @log "processRequest - not handled", arguments;
+      #next();
+    .catch (err) =>
+      @log "processRequest - catch - #{err.stack}"
+  
   unixSockUnlink: () =>
     return new Promise (resolve, reject) =>
       if @config.host.is_sock

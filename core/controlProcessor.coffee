@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 Promise.longStackTraces();
 paths = require 'path'
+func = require './func';
 
 class ControlProcessor
   constructor: (@path, @attributes, @controlName, @renderer) ->
@@ -11,29 +12,46 @@ class ControlProcessor
   fireEvents: () =>
     return new Promise (resolve, reject) =>
       @log "ControlProcessor - fireEvents - start";
-      @fireEvent "onControlLoad", () =>
-        @fireEvent "onControlBeforeRender", () =>
-          @fireEvent "onControlDataBind", () =>
-            @fireEvent "onControlTemplateRender", () =>
-              @fireEvent "onControlRender", () =>
-                @fireEvent "onControlAfterRender", () =>
+      @fireEvent("onControlLoad").then () =>
+        @fireEvent("onControlBeforeRender").then () =>
+          @fireEvent("onControlDataBind").then () =>
+            @fireEvent("onControlTemplateRender").then () =>
+              @fireEvent("onControlRender").then () =>
+                @fireEvent("onControlAfterRender").then () =>
                   @log "ControlProcessor - fireEvents - end";
                   resolve();
+                , reject
+              , reject
+            , reject
+          , reject
+        , reject
+      , reject
   
-  fireEvent: (name, next) =>
-    @log "ControlProcessor - fireEvent #{name} start";
-    if @jsfile[name]?
-      @jsfile[name] () =>
-        @log "ControlProcessor - fireEvent #{name} finished!";
-        next();
-    else
-      @log "ControlProcessor - #{name} nothing found!";
-      next();
+  fireEvent: (name) =>
+    return new Promise (resolve, reject) =>
+      @log "ControlProcessor - fireEvent #{name} start";
+      if @jsfile[name]?
+        return @jsfile[name]().then () =>
+          @log "ControlProcessor - fireEvent #{name} finished!";
+          return @fireModuleEvent(name)
+            .then(resolve, reject);
+        , reject
+      else
+        return @fireModuleEvent(name)
+          .then(resolve, reject);
+
+  fireModuleEvent: (name) =>
+    return new Promise (resolve, reject) =>
+      func.firePromises(0,  @renderer.site.nodes.modules, name)
+        .then(resolve, reject);
+    
+
+  
 
   process: () =>
     return new Promise (resolve, reject) =>
       @log "ControlProcessor - process - Loading #{@controlPath}";
-      control = @renderer.getControl(@controlPath);
+      control = @renderer.core.managers.cache.getObject(@controlPath);
       #control = require @controlPath
       @jsfile = new control();
       #extend(true, jsfile, this); # probally shouldnt do this...

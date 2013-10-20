@@ -39,7 +39,7 @@ class DataSetup
             Email: <a href='mailto:contactus@illisian.com.au'>contactus@illisian.com.au</a> 
           </li>
           <li class='list-group-item'>
-            Mobile: 0426206650
+            Mobile: +61 04 2620 6650
           </li>
           <ul>"
       }
@@ -77,8 +77,10 @@ class DataSetup
         base: "/illisian/"
         sublayout: "sublayouts/"
         layout: "layouts/",
+        module: "modules/",
         content: "public/"
       }
+      site.modules = ["security","security1"];
     
       @db.save(main).then () =>
         home.layout = { id: main._id }
