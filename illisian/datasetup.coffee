@@ -1,4 +1,4 @@
-util = require "../core/func";
+util = require "../lib/func";
 Promise = require "bluebird";
 class DataSetup
   constructor: (@main) ->
@@ -80,7 +80,7 @@ class DataSetup
         module: "modules/",
         content: "public/"
       }
-      site.modules = ["security","security1"];
+      site.modules = ["security"];
     
       @db.save(main).then () =>
         home.layout = { id: main._id }

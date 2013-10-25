@@ -1,41 +1,31 @@
 config = require "./config"
-renderer = require "./core/renderer";
-database = require "./core/database";
-func = require "./core/func";
-siteManager = require "./core/managers/siteManager";
-cacheManager = require "./core/managers/cacheManager";
+database = require "./lib/database";
+func = require "./lib/func";
+cache = require "./lib/cache";
+site = require "./lib/site";
 
-extend = require 'extend'
+#extend = require 'extend'
 util = require 'util'
-cheerio = require 'cheerio'
-consolidate = require 'consolidate'
-paths = require 'path'
+#paths = require 'path'
 
 express = require "express";
 http = require "http";
-fs = require "fs";
+#fs = require "fs";
 url = require 'url'
 
 Promise = require "bluebird"
-Promise.longStackTraces();
+#Promise.longStackTraces();
 
 class MainApp
   constructor: () ->
-    @managers = {};
-    
+
     @config = new config;
     @db = new database @config
-    #@router = new router @config, @db
     @log = func.log;
     @func = func;
-    @static = [];
-    @cache = {};
-    @cache.controls = {}
-    @apps = [];
-    @sites = [];
+    @cache = new cache(this);
+
     
-    @managers.sites = new siteManager(this);
-    @managers.cache = new cacheManager(this);
   init: () =>
     @unixSockUnlink()
       .then(@expressSetup)
@@ -78,8 +68,8 @@ class MainApp
         path = "#{@config.base_dir}/#{app}/app"
         @log "Loading app - #{app} @ #{path}";
         a = require path;
-        @apps[app] = new a(this);
-        promises.push(@apps[app].init());
+        @cache.apps[app] = new a(this);
+        promises.push(@cache.apps[app].init());
       
       Promise.all(promises).then () =>
         resolve();
@@ -87,19 +77,36 @@ class MainApp
   processRequest: (req, res, next) =>
    # if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
    #   return next();
-    @managers.sites.processRequest(req, res).then (html) =>
-      #success
-      @log "processRequest", html?;
-      if html?
-        @log "sending html";
-        res.send html
-        return;
-      next();
+    #req.viewstate = {};
+    
+    @loadSite(req, res).then (site) =>
+      site.process(req,res).then (html) =>
+        if html?
+          @log "sending html";
+          res.send html
+          return;
+        else 
+          @log "html not provided";
+          next();
     , () =>
-      @log "processRequest - not handled", arguments;
+      @log "processRequest - not handled", arguments #, arguments[0].stack;
       #next();
     .catch (err) =>
-      @log "processRequest - catch - #{err.stack}"
+      if err?
+        @log "processRequest - catch -#{err}", err.stack
+
+  loadSite: (req, res) =>
+    return new Promise (resolve, reject) =>
+      uri = url.parse "http://#{req.headers.host}#{req._parsedUrl.pathname}";
+      if @cache.sites[uri.hostname]?
+        return resolve(@cache.sites[uri.hostname]);
+      else      
+        return @db.logic.site.findOne({ hosts: uri.hostname }).then((siteData) =>
+          if siteData?
+            @cache.sites[uri.hostname] = new site this, siteData
+            return resolve(@cache.sites[uri.hostname]);
+        , reject)
+    
   
   unixSockUnlink: () =>
     return new Promise (resolve, reject) =>

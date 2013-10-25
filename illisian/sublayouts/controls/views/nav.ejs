@@ -16,11 +16,25 @@
             <a href="<%=fields.pages[i].path %>" >
               <%=fields.pages[i].name %>
             </a>
-            
-            
           </li>
         <% } %>
       </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <% if(req.session.userprofile) { %>
+            <li>Welcome {{req.session.userprofile.displayName}}</li>
+        <% } else { %>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sign In <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="/login/google">Google</a></li>
+            <li><a href="/login/facebook">Facebook</a></li>
+            <li><a href="/login/twitter">Twitter</a></li>
+            <li><a href="/login/github">Github</a></li>
+          </ul>
+        </li>
+        <% } %>
+      </ul>
+      
       
     </div>
   </div>

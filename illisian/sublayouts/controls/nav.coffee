@@ -1,20 +1,21 @@
 util = require "util"
 Promise = require("bluebird");
-Control = require("../../../core/abstract/control");
+Control = require("../../../lib/templateControl");
 
 class Nav extends Control
   view: { file: 'nav.ejs', renderer: 'ejs' }
   onControlDataBind: () => # provide fields
     return new Promise (resolve, reject) =>
       @log "onControlDataBind getRootPage"
-      @renderer.db.logic.site.getRootPage(@renderer.site).then (page) =>
+      @db.logic.site.getRootPage(@site.siteData).then (pageData) =>
         @log "onControlDataBind getRootPage page response"
-        if page?
+        if pageData?
           @log "onControlDataBind getChildren children"
-          @renderer.db.logic.page.getChildren(page).then (children) =>
+          @db.logic.page.getChildren(pageData).then (childrenData) =>
             @log "onControlDataBind getChildren children response"
-            pages = [page].concat(children);
+            pages = [pageData].concat(childrenData);
             @fields.pages = pages;
+            @security = @security || {};
             @log "Nav Fields Set!";
             return resolve();
         else

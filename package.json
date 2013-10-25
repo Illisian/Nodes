@@ -13,10 +13,14 @@
     "mongoose": "*",
     "cheerio": "*",
     "extend": "*",
+    "minimatch": "*",
     "consolidate": "*",
     "glob": "*",
     "ejs": "*",
     "jade": "*",
-    "jsDAV": "*"
+    "jsDAV": "*",
+    "passport": "*",
+    "passport-google-oauth": "*",
+    "signals": "*"
   }
 }

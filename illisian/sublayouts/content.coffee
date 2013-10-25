@@ -1,5 +1,5 @@
 Promise = require("bluebird");
-Control = require("../../core/abstract/control");
+Control = require("../../lib/templateControl");
 
 
 class Content extends Control

@@ -29,7 +29,7 @@ class Config
           secret: 'keyboard cat',
           key: 'sid',
           #cookie: {httpOnly: true, secure: true}
-          cookie: {httpOnly: true}
+          #cookie: {httpOnly: true}
         })
         #express.errorHandler() if "development" is @app.get("env")
       ]

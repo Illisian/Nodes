@@ -15,7 +15,7 @@ class Util
           resolve();
       , 2000
   @log: () ->
-    #console.log "[#{new Date().toUTCString()}]", arguments;
+    console.log "[#{new Date().toUTCString()}]", arguments;
   @objToArr: (obj) ->
     result = []
     for i in [1..arguments.length]
@@ -35,16 +35,21 @@ class Util
         Util.fireFunctions(i+1, array, nameOfFunc, success, failure);
     else
       success();
-  @firePromises: (i, array, nameOfFunc) =>
+  @firePromises: (i, array, nameOfFunc, args) =>
     return new Promise (resolve, reject) =>
       if array? and array.length > 0 and array[i]?
-        if array[i][nameOfFunc]?
-          Util.log "Firing func #{nameOfFunc}";
-          return array[i][nameOfFunc]().then () =>
+        if nameOfFunc?
+          if array[i][nameOfFunc]?
+            Util.log "Firing func #{nameOfFunc}";
+            return array[i][nameOfFunc](args).then () =>
+              return Util.firePromises(i+1, array, nameOfFunc).then(resolve, reject);
+            , reject
+          else 
             return Util.firePromises(i+1, array, nameOfFunc).then(resolve, reject);
-          , reject
-        else 
-          return Util.firePromises(i+1, array, nameOfFunc).then(resolve, reject);
+        else
+          array[i](args).then () =>
+            return Util.firePromises(i+1, array, nameOfFunc).then(resolve, reject);
+          
       else
         return resolve();
   
