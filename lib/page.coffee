@@ -4,7 +4,8 @@ Promises = require './Promises';
 paths = require 'path'
 cheerio = require 'cheerio';
 extend = require 'extend'
-
+cache = require './cache';
+util = require 'util'
 class Page
   constructor: (@core, @site, @pageData) ->
     {@db, @log} = @core;
@@ -12,8 +13,16 @@ class Page
       onPageLoad: new Promises()
       onPageFinish: new Promises() 
     }
-    @sublayouts = [];
+    @fields = {};
+    @cache = new cache(@core);
+    
+    @html = "";
+    #@$ = cheerio.load @html;
+    
+    @cache.put("sublayouts");
+   
     @sublayoutPromises = new Promises();
+    @isRendered = false;
   process: (req, res) =>
     return new Promise (resolve, reject) =>
       return @createFields().then () =>
@@ -27,19 +36,17 @@ class Page
               @log "Page - processSublayouts";
               return @processSublayouts(req,res).then () =>
                 @log "Page - processSublayouts - Finished";
-                @log "Page - processSublayoutTags";
-                return @processSublayoutTags(req,res)
-                  .then(@assembleSublayouts).then () =>
-                    @log "Page - onPageFinish";
-                    return @site.events.onPageFinish.chain(req,res, this).then () =>
-                      return @events.onPageFinish.chain(req,res).then () =>
-                        @log "Page - onPageFinish - Finished", @$?;
-                        #@$('[nodes-sublayout]').removeAttr("nodes-sublayout")
-                        #@$('[nodes-placeholder]').removeAttr("nodes-placeholder")
-                        @html = @$.html();
-                        resolve();
-                      ,reject
+                return @assembleSublayouts(req,res).then () =>
+                  @log "Page - onPageFinish";
+                  return @site.events.onPageFinish.chain(req,res, this).then () =>
+                    return @events.onPageFinish.chain(req,res).then () =>
+                      @log "Page - onPageFinish - Finished", @$?;
+                      #@$('[nodes-sublayout]').removeAttr("nodes-sublayout")
+                      #@$('[nodes-placeholder]').removeAttr("nodes-placeholder")
+                      @html = @$.html();
+                      return resolve();
                     ,reject
+                  ,reject
                 ,reject
               ,reject
             ,reject
@@ -67,82 +74,131 @@ class Page
   
   processLayout: (req, res) =>
     return new Promise (resolve, reject) =>
-      @db.logic.layout.findOne({ _id: @pageData.layout.id }).then (layoutData) =>
-        if layoutData?
-          @log "init processControl"
-          return @processControl(req, res, layoutData.name, @site.layoutPath, layoutData)
-            .then (@layout) =>
-              @log "Page - processLayout - Loading Layout Complete"
-              @$ = cheerio.load @layout.html;
-              return resolve();
-        return reject();
-      , reject
+      if @layout?
+        return @layout.process(req,res, true).then () =>
+          @html = @layout.html
+          @$ = cheerio.load @html
+          return resolve();
+        ,reject
+      else 
+        return @db.logic.layout.findOne({ _id: @pageData.layout.id }).then (layoutData) =>
+          if layoutData?
+            @log "init processControl"
+            return @processControl(req, res, layoutData.name, @site.layoutPath, layoutData)
+              .then (@layout) =>
+                @log "Page - processLayout - Loading Layout Complete"
+                @html = @layout.html
+                @$ = cheerio.load @html;
+                return resolve();
+          return reject();
+        , reject
 
   
   processSublayouts: (req, res) =>
     return new Promise (resolve, reject) =>
-      @log "Page - processSublayouts"
-      promises = new Promises();
-      for sublayout in @pageData.sublayouts
-        promises.push @sublayoutProcessor, this, [req, res, sublayout];
-      @log "Page - processSublayouts - Found Sublayouts - #{promises.length}"
-      return promises.chain().then resolve, reject;
-
-  sublayoutProcessor: (req, res, sublayoutRef) =>
-    return new Promise (resolve, reject) =>
-      @log "Renderer - sublayoutProcessor - Searching for Sublayout - #{sublayoutRef.id}"
-      @db.logic.sublayout.findOne({ _id: sublayoutRef.id }).then (sublayoutData) =>
-        if sublayoutData?
-          attr = sublayoutRef.attributes || {};
-          target = '[nodes-placeholder="'+sublayoutRef.placeholder+'"]'
-          return @processControl(req, res, sublayoutData.name, @site.sublayoutPath, sublayoutData, attr, target)
-            .then (sublayout) =>
-              @sublayouts.push sublayout;
-              @log "Page - sublayoutProcessor - finished - #{sublayoutRef.name}"
-              resolve();
-
-  processSublayoutTags: (req, res) =>
-    return new Promise (resolve, reject) =>
-      promises = new Promises();
-      @log "Renderer - processSublayoutTags - start"
+      @sublayoutPromises = new Promises();
+      @log "Page - loadSublayouts - start";
+      for sublayoutRef in @pageData.sublayouts
+        target = "[nodes-placeholder='#{sublayoutRef.placeholder}']";
+        sublayoutid = "#{sublayoutRef.id}-#{sublayoutRef.placeholder}-#{sublayoutRef.index}"
+        @sublayoutPromises.push @sublayoutProcessor, this, [req, res, sublayoutRef, sublayoutid, target];
+      @log "Page - loadSublayouts - load tags"
       tagCount = @$('[nodes-sublayout]').length;
       if tagCount > 0
         tags = @$('[nodes-sublayout]').toArray();
-        @log "Renderer - processSublayoutTags - tags", tags.length
+        @log "Page - processSublayouts - tags", tags.length
         for sublayoutTag in tags
-          promises.push @sublayoutTagProcessor, this, [req, res, sublayoutTag];
-        @log "Renderer - processSublayoutTags - promises", promises
-        return promises.chain().then resolve, reject;
-      else
-        @log "Renderer - processSublayoutTags - no tags found"
-        resolve();
-  
-  sublayoutTagProcessor: (req, res, sublayoutTag) =>
+          sltdetail = @getTagDetails(sublayoutTag);
+          @sublayoutPromises.push @sublayoutProcessor, this, [req, res, sltdetail, sltdetail.id, sublayoutTag];
+      return @sublayoutPromises.chain().then resolve, reject;
+    
+
+  sublayoutProcessor: (req, res, ref, id, target) =>
     return new Promise (resolve, reject) =>
-      name = @$(sublayoutTag).attr('nodes-sublayout');
-      attributes = @$(sublayoutTag).attr();
-      field_regex = /^nodes-sublayout-attr-.*$/
-      replace_regex = /^nodes-sublayout-attr-/
-      attr = {};
-      for key of attributes
-        result = key.match(field_regex);
-        if result?
-          fieldname = key.replace(replace_regex, "");
-          fielddata = @$(sublayoutTag).attr(key);
-          attr[fieldname] = fielddata;
-      return @processControl(req, res, name, @site.sublayoutPath, {}, attr, sublayoutTag).then (sublayout) =>
-        @sublayouts.push sublayout
-        resolve();
-  
+      return @cache.get('sublayouts', id).then (sublayout) =>
+        sublayout.target = target;
+        return sublayout.process(req, res, true).then () =>
+          return resolve();
+        , reject
+      , () =>
+        #rejected
+        @log "Page - sublayoutProcessor - Nothing in cache for #{id}";
+        if ref.controlname?
+          @log "Page - sublayoutProcessor - Processing Tag #{ref.controlname}";
+          attr = ref.attributes || {};
+          name = ref.controlname;
+          
+          return @processControl(req, res, name, @site.sublayoutPath, ref, attr, target).then (sublayout) =>
+            @cache.put("sublayouts", id, sublayout).then () =>
+              return resolve();
+            , reject
+        else
+          @log "Page - sublayoutProcessor - Processing Sublayout - #{ref.id}"
+          return @db.logic.sublayout.findOne({ _id: ref.id }).then (sublayoutData) =>
+            if sublayoutData?
+              attr = ref.attributes || {};
+              ref.sublayoutData = sublayoutData;
+              return @processControl(req, res, sublayoutData.name, @site.sublayoutPath, ref, attr, target).then (sublayout) =>
+                sublayout.target = target;
+                return @cache.put('sublayouts', id, sublayout).then () =>
+                  @log "Page - sublayoutProcessor - finished - #{ref.id}", target
+                  return resolve();
+                , reject 
+              , reject 
+          ,reject
+
+  getTagDetails: (sublayoutTag) =>
+    id = @$(sublayoutTag).attr('nodes-id')
+    controlname = @$(sublayoutTag).attr('nodes-sublayout');
+    attributes = @$(sublayoutTag).attr();
+    field_regex = /^nodes-sublayout-attr-.*$/
+    replace_regex = /^nodes-sublayout-attr-/
+    attr = {};
+    for key of attributes
+      result = key.match(field_regex);
+      if result?
+        fieldname = key.replace(replace_regex, "");
+        fielddata = @$(sublayoutTag).attr(key);
+        attr[fieldname] = fielddata;
+    return {
+      id: id
+      tag: sublayoutTag
+      controlname: controlname
+      attributes: attributes
+    };
+
   assembleSublayouts: () =>
     return new Promise (resolve, reject) =>
-      @log "Page - assembleSublayouts - Starting Sublayouts"
-      for s in @sublayouts
-        @log "Page - assembleSublayouts - Appending Sublayouts #{s.viewPath}", s.html? , s.target?;
-        if s.html? and s.target?
-          @$(s.target).append(s.html);
-      @log "Renderer - assembleSublayouts - End"
-      resolve();
+      if @isRendered
+        resolve();
+      else
+        @log "Page - assembleSublayouts - Starting Sublayouts"
+        return @cache.get('sublayouts').then((sublayouts) =>
+          @log "Page - assembleSublayouts - got sublayouts", sublayouts?
+          for s of sublayouts
+            @log "Page - assembleSublayouts - Appending Sublayouts #{sublayouts[s].viewPath}", sublayouts[s].html? , sublayouts[s].target?;
+            if sublayouts[s].html? and sublayouts[s].target?
+              target = sublayouts[s].target;
+              if @$(target).length == 0
+                @log "target is missing ", sublayouts[s].controlData
+              else
+                @log "setting html", sublayouts[s].target
+                @$(target).append(sublayouts[s].html);
+              ###
+                if sublayouts[s].controlData.placeholder?
+                  @log "searching for - placeholder - #{sublayouts[s].controlData.placeholder}"
+                  target = @$("[nodes-placeholder='#{sublayouts[s].controlData.placeholder}']");
+                else if sublayouts[s].controlData.tag?
+                  @log "searching for - id - #{sublayouts[s].controlData.id}"
+                  target = @$("[nodes-id='#{sublayouts[s].controlData.id}']");
+                sublayouts[s].target = target;
+              ###
+            #@isRendered = true;
+          return resolve();
+        , reject)
+          .catch (err) => 
+            @log err, err.stack
+        return resolve();
 
         
   processControl: (req, res, name, baseDir, controlData, attr, target) =>

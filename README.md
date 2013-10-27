@@ -6,7 +6,26 @@ Nodes is a content management system coded in [coffee-script] for [node.js]. It 
 Features
 ----
   - Control typed components i.e. basic js/view implementation
+  - Dynamic Events Control and module implementation
   - Inline Tags to embedded controls
+  - Persistent Memory per page using SessionID 
+  - Dynamic compiling of resources
+
+
+System Event Process
+----
+  - onSiteStart
+  - onPageLoad
+
+  - isPostBack ? onControlPostBack : onControlLoad
+  - onControlBeforeRender
+  - onControlDataBind
+  - onControlTemplateRender
+  - onControlRender
+  - onControlAfterRender
+
+  - onPageFinish
+  - onSiteFinish
 
 Tech
 ----

@@ -21,6 +21,8 @@
     "jsDAV": "*",
     "passport": "*",
     "passport-google-oauth": "*",
-    "signals": "*"
+    "passport-github": "*",
+    "passport-facebook": "*",
+    "connect-assets": "*"
   }
 }

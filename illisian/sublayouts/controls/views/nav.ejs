@@ -11,25 +11,61 @@
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <% for(var i=0; i<fields.pages.length; i++) {%>
-          <li <% if(fields.pages[i].hasChildren) { %> class="dropdown" <% } %> >
-            <a href="<%=fields.pages[i].path %>" >
-              <%=fields.pages[i].name %>
+        <% for(var i=0; i<pages.length; i++) {%>
+          <li <% if(pages[i].showDropdown) { %> class="dropdown" <% } %> >
+            <a <% if(pages[i].showDropdown) { %>  class="dropdown-toggle" data-toggle="dropdown" <% } %> href="<%=pages[i].path %>" >
+              <%=pages[i].name %>
+              <% if(pages[i].showDropdown) { %>
+                <b class="caret"></b>
+              <% }%>
             </a>
+          
+          <% if(pages[i].showDropdown) { %>
+          <ul class="dropdown-menu">
+            <% for(var s = 0; s < pages[i].children.length; s++) {%>
+              <li>
+                <a href="<%=pages[i].children[s].path %>"><%=pages[i].children[s].name %></a>
+              </li>
+            <% }%>
+          </ul>
+          <% } %>
           </li>
         <% } %>
+        <li>
+        <a href="javascript:;"><%=idtest %></a>
+        </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <% if(req.session.userprofile) { %>
-            <li>Welcome {{req.session.userprofile.displayName}}</li>
+        <% if(req.isAuthenticated()) { %>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <div class="row">
+            <% if(security.photo) { %>
+            <div class="col-xs-2">
+               <img class="img-responsive" src='<%=security.photo %>'/>
+            </div>
+            <div class="col-xs-10">
+            <% } else { %>
+            <div class="col-xs-12">
+            <% } %>
+            
+              Welcome <%=security.name %><b class="caret"></b>
+            </div>
+          </div>
+           
+            </a>
+          <ul class="dropdown-menu">
+            <li><a href="/logout">Logout</a></li>
+
+          </ul>
+        </li>
         <% } else { %>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sign In <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li><a href="/login/google">Google</a></li>
-            <li><a href="/login/facebook">Facebook</a></li>
-            <li><a href="/login/twitter">Twitter</a></li>
-            <li><a href="/login/github">Github</a></li>
+            <li><a href="/auth/google">Google</a></li>
+            <li><a href="/auth/github">Github</a></li>
+            <li><a href="/auth/facebook">Facebook</a></li>
           </ul>
         </li>
         <% } %>
@@ -41,16 +77,4 @@
     
 </div>
 
-
-<!--
-             <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-        <ul class="dropdown-menu">
-          <li><a href="#">Action</a></li>
-          <li><a href="#">Another action</a></li>
-          <li><a href="#">Something else here</a></li>
-          <li><a href="#">Separated link</a></li>
-        </ul>
-      </li>
-      -->
 

@@ -80,7 +80,7 @@ class DataSetup
         module: "modules/",
         content: "public/"
       }
-      site.modules = ["security"];
+      site.modules = [];
     
       @db.save(main).then () =>
         home.layout = { id: main._id }

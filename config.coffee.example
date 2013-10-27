@@ -1,0 +1,66 @@
+express = require "express"
+passport = require "passport"
+
+passport.serializeUser (user, done) ->
+  done(null, user);
+
+passport.deserializeUser (obj, done) ->
+  done(null, obj);
+
+class Config
+  constructor: () ->
+    @base_dir =  __dirname;
+    @host = {
+      ip: null
+      is_sock: true
+      port: "/tmp/tmp.sock" #process.env.PORT or 3000
+    }
+    @database = {
+      ip: "127.0.0.1"
+      name: "nodes"
+    }
+    @apps = [
+      "illisian"
+    ]
+      
+    @modules = ["compiler", "security", "fields"]
+
+    @express = {
+      enable: ["trust-proxy"]
+      use: [
+        express.favicon()
+        express.logger("dev")
+        #express.methodOverride()
+        express.cookieParser("your secret here")
+        express.session({
+          secret: 'keyboard cat',
+          key: 'sid',
+          #cookie: {httpOnly: true, secure: true}
+          #cookie: {httpOnly: true}
+        })
+        passport.initialize()
+        passport.session()
+        #express.errorHandler() if "development" is @app.get("env")
+      ]
+        
+    }
+    @security = {}
+    @security.google = {
+      callbackURL: "{host}/auth/google"
+      clientID: ""
+      clientSecret: ""
+      scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']
+    }
+    @security.github = {
+      callbackURL: "{host}/auth/github"
+      clientID: ""
+      clientSecret: ""
+    }
+    @security.facebook = {
+      callbackURL: "{host}/auth/facebook"
+      clientID: ""
+      clientSecret: ""
+    }
+
+
+module.exports = Config

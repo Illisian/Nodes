@@ -88,9 +88,9 @@ class MainApp
         else 
           @log "html not provided";
           next();
-    , () =>
-      @log "processRequest - not handled", arguments #, arguments[0].stack;
-      #next();
+      , () =>
+        @log "processRequest - not handled", arguments
+        next();
     .catch (err) =>
       if err?
         @log "processRequest - catch -#{err}", err.stack

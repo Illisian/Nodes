@@ -4,7 +4,7 @@ express = require 'express';
 paths = require 'path'
 func = require './func';
 page = require './page';
-
+cache = require './cache';
 #Promise.longStackTraces();
 
 class Site
@@ -24,17 +24,20 @@ class Site
       onControlTemplateRender: new Promises()
       onControlRender: new Promises()
       onControlAfterRender: new Promises()
+      onControlPostBack: new Promises();
     }
+    @cache = new cache(@core);
     @sublayoutPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.sublayout}";
     @layoutPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.layout}";
     @modulePath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.module}"; 
     @sysmodulePath = "#{@config.base_dir}/modules/"; 
     @staticPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.content}";
     @static = Promise.promisify(express.static(@staticPath));
-    @modules = []
-    
-    fieldModule = @loadModule("#{@sysmodulePath}fields");
-    @modules.push fieldModule;
+
+   # @connectAssets = Promise.promisify(require("connect-assets")({src: @staticPath}));
+    @modules = [];
+    for m in @config.modules
+      @modules.push @loadModule("#{@sysmodulePath}#{m}")
     
     for module in @siteData.modules
       @log "loadSite - Load Modules - #{@modulePath}#{module}";
@@ -44,21 +47,42 @@ class Site
 
   process: (req, res) =>
     return new Promise (resolve, reject) =>
-      #check for static content;
-      return @static(req,res).then(() =>
-        return @events.onSiteStart.chain(req, res, this).then () =>
-          return @loadPageData(req,res).then (pageData) =>
-            @log "process - init new page"
-            newpage = new page(@core, this, pageData);
-            @log "process - process new page"
-            return newpage.process(req, res).then () =>
+      #@log "check for static content";
+      return @events.onSiteStart.chain(req, res, this).then () =>
+        return @static(req,res).then () =>
+          return @loadPage(req,res).then (page) =>
+            @log "process - process page"
+            return page.process(req, res).then () =>
               return @events.onSiteFinish.chain(req, res, @site, @page).then () =>
                 @log "Site - onSiteFinish - sending html";
-                resolve(newpage.html);
-            , reject;
-          , reject;
-        , reject)
-
+                resolve(page.html);
+              , reject
+            , reject
+          , reject
+        , reject
+      , reject
+  
+  loadPage: (req, res) =>
+    return new Promise (resolve, reject) =>
+      return @cache.get(req.sessionID, req._parsedUrl.pathname).then (file) =>
+        @log "loadPage - Page Loaded from cache"
+        return resolve(file);
+      , () =>
+        filter = { site: @siteData._id, path: req._parsedUrl.pathname }
+        return @db.logic.page.findOne(filter).then (pageData) =>
+          if pageData?
+            newpage = new page(@core, this, pageData);
+            return @cache.put(req.sessionID, req._parsedUrl.pathname, newpage).then () =>
+              @log "loadPage - Page Loaded into cache"
+              return resolve(newpage);
+          else
+            @log "loadPage - Page Not Found in system"
+            return reject();
+      
+      
+      @log "session id?",req;
+      #resolve();
+  
   loadPageData: (req, res) =>
     return new Promise (resolve, reject) =>
       filter = { site: @siteData._id, path: req._parsedUrl.pathname }
@@ -72,7 +96,7 @@ class Site
   
   loadModule: (path) =>
     @log "Loading Module #{path}"
-    mod = @core.cache.getControl(path);
+    mod = @cache.getControl(path);
     @log "Loading Module ", mod;
     newmod = new mod({ core: @core, site: this });
     for event of @events
