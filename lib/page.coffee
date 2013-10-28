@@ -4,54 +4,50 @@ Promises = require './Promises';
 paths = require 'path'
 cheerio = require 'cheerio';
 extend = require 'extend'
-cache = require './cache';
+cacheStore = require './cacheStore';
 util = require 'util'
 class Page
   constructor: (@core, @site, @pageData) ->
     {@db, @log} = @core;
     @events = {
-      onPageLoad: new Promises()
-      onPageFinish: new Promises() 
+      onPageRequestStart: new Promises()
+      onPageRequestFinish: new Promises() 
     }
     @fields = {};
-    @cache = new cache(@core);
+    @cache = new cacheStore();
     
     @html = "";
     #@$ = cheerio.load @html;
-    
-    @cache.put("sublayouts");
-   
+
     @sublayoutPromises = new Promises();
     @isRendered = false;
+    
   process: (req, res) =>
     return new Promise (resolve, reject) =>
       return @createFields().then () =>
         @log "Page - onPageStart";
-        return @site.events.onPageLoad.chain(req, res, this).then () =>
-          return @events.onPageLoad.chain(req, res).then () =>
-            @log "Page - onPageStart - Finished";
-            @log "Page - processLayout";
-            return @processLayout(req,res).then () =>
-              @log "Page - processLayout - Finished";
-              @log "Page - processSublayouts";
-              return @processSublayouts(req,res).then () =>
-                @log "Page - processSublayouts - Finished";
-                return @assembleSublayouts(req,res).then () =>
-                  @log "Page - onPageFinish";
-                  return @site.events.onPageFinish.chain(req,res, this).then () =>
-                    return @events.onPageFinish.chain(req,res).then () =>
-                      @log "Page - onPageFinish - Finished", @$?;
-                      #@$('[nodes-sublayout]').removeAttr("nodes-sublayout")
-                      #@$('[nodes-placeholder]').removeAttr("nodes-placeholder")
-                      @html = @$.html();
-                      return resolve();
-                    ,reject
-                  ,reject
+        return @fireEvent(req,res,'onPageRequestStart').then () =>
+          @log "Page - onPageRequestStart - Finished";
+          @log "Page - processLayout";
+          return @processLayout(req,res).then () =>
+            @log "Page - processLayout - Finished";
+            @log "Page - processSublayouts";
+            return @processSublayouts(req,res).then () =>
+              @log "Page - processSublayouts - Finished";
+              return @assembleSublayouts(req,res).then () =>
+                @log "Page - onPageFinish";
+                return @fireEvent(req,res,'onPageRequestFinish').then () =>
+                  @log "Page - onPageRequestFinish - Finished", @$?;
+                  #@$('[nodes-sublayout]').removeAttr("nodes-sublayout")
+                  #@$('[nodes-placeholder]').removeAttr("nodes-placeholder")
+                  @html = @$.html();
+                  return resolve();
                 ,reject
               ,reject
             ,reject
           ,reject
         ,reject
+
 
   
   finish: () =>
@@ -169,36 +165,20 @@ class Page
 
   assembleSublayouts: () =>
     return new Promise (resolve, reject) =>
-      if @isRendered
-        resolve();
-      else
-        @log "Page - assembleSublayouts - Starting Sublayouts"
-        return @cache.get('sublayouts').then((sublayouts) =>
-          @log "Page - assembleSublayouts - got sublayouts", sublayouts?
-          for s of sublayouts
-            @log "Page - assembleSublayouts - Appending Sublayouts #{sublayouts[s].viewPath}", sublayouts[s].html? , sublayouts[s].target?;
-            if sublayouts[s].html? and sublayouts[s].target?
-              target = sublayouts[s].target;
-              if @$(target).length == 0
-                @log "target is missing ", sublayouts[s].controlData
-              else
-                @log "setting html", sublayouts[s].target
-                @$(target).append(sublayouts[s].html);
-              ###
-                if sublayouts[s].controlData.placeholder?
-                  @log "searching for - placeholder - #{sublayouts[s].controlData.placeholder}"
-                  target = @$("[nodes-placeholder='#{sublayouts[s].controlData.placeholder}']");
-                else if sublayouts[s].controlData.tag?
-                  @log "searching for - id - #{sublayouts[s].controlData.id}"
-                  target = @$("[nodes-id='#{sublayouts[s].controlData.id}']");
-                sublayouts[s].target = target;
-              ###
-            #@isRendered = true;
-          return resolve();
-        , reject)
-          .catch (err) => 
-            @log err, err.stack
+      @log "Page - assembleSublayouts - Starting Sublayouts"
+      return @cache.get('sublayouts').then (sublayouts) =>
+        @log "Page - assembleSublayouts - got sublayouts", sublayouts?
+        for s of sublayouts
+          @log "Page - assembleSublayouts - Appending Sublayouts #{sublayouts[s].viewPath}", sublayouts[s].html? , sublayouts[s].target?;
+          if sublayouts[s].html? and sublayouts[s].target?
+            target = sublayouts[s].target;
+            if @$(target).length == 0
+              @log "target is missing ", sublayouts[s].controlData
+            else
+              @log "setting html"
+              @$(target).append(sublayouts[s].html);
         return resolve();
+      , reject
 
         
   processControl: (req, res, name, baseDir, controlData, attr, target) =>
@@ -226,4 +206,12 @@ class Page
       , reject
     .catch (err) =>
       @log "Page - processControl - error", err, err.stack
+      
+  fireEvent: (req, res, name) =>
+    return new Promise (resolve, reject) =>
+     @site.events[name].chain(req, res, this).then () =>
+        @events[name].chain(req, res).then () =>
+          return resolve();
+        , reject
+      ,reject
 module.exports = Page;

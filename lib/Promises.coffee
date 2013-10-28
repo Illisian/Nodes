@@ -20,11 +20,16 @@ class Promises
     @length = @promises.length;
   push: (promise, context, args) =>
     this.add promise, context, args;
-    
+  getAll: () =>
+    return @promises;
+  clear: () =>
+    @promises = [];
+    @length = 0;
   @chainUtil: (i, array, originalArgs, collect) ->
     return new Promise (resolve, reject) =>
       if not array?
-        throw "Promises - chainUtil - array is not defined";
+        @log "Promises - chainUtil - array is not defined";
+        return;
       if not collect?
         collect = [];
       if array[i]?

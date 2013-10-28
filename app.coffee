@@ -3,6 +3,8 @@ database = require "./lib/database";
 func = require "./lib/func";
 cache = require "./lib/cache";
 site = require "./lib/site";
+Promises = require "./lib/Promises";
+cacheStore = require "./lib/cacheStore";
 
 #extend = require 'extend'
 util = require 'util'
@@ -11,21 +13,30 @@ util = require 'util'
 express = require "express";
 http = require "http";
 #fs = require "fs";
-url = require 'url'
 
 Promise = require "bluebird"
-#Promise.longStackTraces();
+Promise.longStackTraces();
 
 class MainApp
   constructor: () ->
-
     @config = new config;
+    @sysmodulePath = "#{@config.base_dir}/modules/"; 
     @db = new database @config
     @log = func.log;
     @func = func;
     @cache = new cache(this);
-
     
+    @modules = new cacheStore();
+    @sites = new cacheStore();
+    
+    @sockets = {}
+    @events = {
+      onAppConfig: new Promises()
+      onAppStart: new Promises()
+    }
+    @modules = []
+    for m in @config.modules
+      @modules.push @loadModule("#{@sysmodulePath}#{m}")
   init: () =>
     @unixSockUnlink()
       .then(@expressSetup)
@@ -44,13 +55,20 @@ class MainApp
       @log "setting up express";
       @express = express();
       @express.set "port", @config.host.port 
+      @log "setting up express - enable";
       for setting in @config.express.enable then @express.enable(setting)
+      @log "setting up express - use";
       for setting in @config.express.use then @express.use(setting)
-      @express.use express.bodyParser()
-      @express.use @processRequest
-      http.createServer(@express).listen @express.get("port"), =>
-        @log "express is now listening on #{@config.host.port}";
-        resolve();
+      @log "setting up express - onAppConfig.chain", @events.onAppConfig.length;
+      return @events.onAppConfig.chain(@express).then () =>
+        @express.use express.bodyParser()
+        @express.use @processRequest
+        @server = http.createServer(@express)
+        @server.listen @express.get("port"), () =>
+          @events.onAppStart.chain(@express, @server).then () =>
+          @log "express is now listening on #{@config.host.port}";
+          return resolve();
+      , reject
 
 
   setupData: () =>
@@ -78,8 +96,11 @@ class MainApp
    # if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
    #   return next();
     #req.viewstate = {};
-    
+    #cookie = func.findCookie(req);
+    #req.session.cookie = 
+    #@log "COOKIES", func.findCookieKey(req);
     @loadSite(req, res).then (site) =>
+      @log "start site processing"
       site.process(req,res).then (html) =>
         if html?
           @log "sending html";
@@ -94,19 +115,31 @@ class MainApp
     .catch (err) =>
       if err?
         @log "processRequest - catch -#{err}", err.stack
-
+  
   loadSite: (req, res) =>
     return new Promise (resolve, reject) =>
-      uri = url.parse "http://#{req.headers.host}#{req._parsedUrl.pathname}";
-      if @cache.sites[uri.hostname]?
-        return resolve(@cache.sites[uri.hostname]);
-      else      
-        return @db.logic.site.findOne({ hosts: uri.hostname }).then((siteData) =>
-          if siteData?
-            @cache.sites[uri.hostname] = new site this, siteData
-            return resolve(@cache.sites[uri.hostname]);
-        , reject)
-    
+      uri = func.getUriFromReq(req);
+      key = func.findCookieKey(req);
+      @sites.get(key, uri.hostname).then (site) =>
+        resolve(site);
+      , () =>
+        return @db.logic.site.findOne({ hosts: uri.hostname }).then (siteData) =>
+          @log "Starting Site"
+          newsite = new site this, siteData;
+          @log "Storing Site"
+          return @sites.put(key, uri.hostname, newsite).then () =>
+            @log "fireing the onSiteLoad Events"
+            return newsite.events.onSiteLoad.chain(req,res,newsite).then () =>
+              resolve(newsite);
+        , reject
+  loadModule: (path) =>
+    @log "Loading Module #{path}"
+    mod = @cache.getControl(path);
+    newmod = new mod({ core: this });
+    for event of @events
+      if newmod[event]?
+        @log "loadModule - event - #{event}";
+        @events[event].add newmod[event]
   
   unixSockUnlink: () =>
     return new Promise (resolve, reject) =>

@@ -16,14 +16,12 @@ System Event Process
 ----
   - onSiteStart
   - onPageLoad
-
   - isPostBack ? onControlPostBack : onControlLoad
   - onControlBeforeRender
   - onControlDataBind
   - onControlTemplateRender
   - onControlRender
   - onControlAfterRender
-
   - onPageFinish
   - onSiteFinish
 

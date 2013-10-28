@@ -10,6 +10,13 @@ FacebookStrategy = require('passport-facebook').Strategy;
 passport = require "passport"
 
 
+passport.serializeUser (user, done) ->
+  done(null, user);
+
+passport.deserializeUser (obj, done) ->
+  done(null, obj);
+
+
 class Security extends Module
   constructor: (@options) ->
     super; # call this to make sure everything is set;
@@ -23,6 +30,23 @@ class Security extends Module
     @proxies["google"] = Promise.promisify(passport.authenticate('google', { successRedirect: '/' }));
     @proxies["github"] = Promise.promisify(passport.authenticate('github', { successRedirect: '/' }));
     @proxies["facebook"] = Promise.promisify(passport.authenticate('facebook', { successRedirect: '/' }));
+  
+  
+  onAppConfig: (expressApp) =>
+    return new Promise (resolve, reject) =>
+      expressApp.use passport.initialize()
+      expressApp.use passport.session()
+      return resolve();
+      
+  onSiteRequestStart: (req, res) =>
+    return new Promise (resolve, reject) =>
+      path = req._parsedUrl.pathname
+      if path.match('^/auth')
+        return @processAuth(req, res).then resolve, reject;
+      else if path.match('^/logout$')
+        return @logout(req, res);
+      resolve();
+
   onStrategyComplete: (accessToken, refreshToken, profile, done) =>
     # create user
     #done(err, user);
@@ -54,15 +78,7 @@ class Security extends Module
     @log "redirectUser"
     res.redirect "http://clive.illisian.com.au/";
   
-  onSiteStart: (req, res) =>
-    return new Promise (resolve, reject) =>
-      # @log "Illisian - Security Module - onSiteBeforePage", arguments
-      path = req._parsedUrl.pathname
-      if path.match('^/auth')
-        return @processAuth(req, res).then resolve, reject;
-      else if path.match('^/logout$')
-        return @logout(req, res);
-      resolve();
+
       
   logout: (req, res) =>
     return new Promise (resolve, reject) =>
@@ -89,10 +105,5 @@ class Security extends Module
           )
         return resolve(user);
       ));
-        
-  onPageFinish: () =>
-    return new Promise (resolve, reject) =>
-      @log "SECURITY DOES NOT KILL";
-      resolve();
 
 module.exports = Security;

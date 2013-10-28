@@ -23,6 +23,9 @@
     "passport-google-oauth": "*",
     "passport-github": "*",
     "passport-facebook": "*",
-    "connect-assets": "*"
+    "connect-assets": "*",
+    "socket.io": "*",
+    "session.socket.io": "*",
+    "connect": "*"
   }
 }

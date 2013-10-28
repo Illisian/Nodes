@@ -1,6 +1,7 @@
 fs = require "fs"
 Promise = require "bluebird"
 util = require "util"
+url = require 'url'
 class Util
   constructor: () ->
 
@@ -22,19 +23,10 @@ class Util
       if obj[arguments[i]]
         result.push obj[arguments[i]];
     return result;
-
-  @fireFunctions: (i, array, nameOfFunc, success, failure) =>
-    if array[i]?
-      if array[i][nameOfFunc]?
-        array[i][nameOfFunc] () =>
-          Util.fireFunctions(i+1, array, nameOfFunc, success, failure);
-        , (errorMessage) =>
-          failure(errorMessage);
-          return;
-      else 
-        Util.fireFunctions(i+1, array, nameOfFunc, success, failure);
-    else
-      success();
+  @findCookieKey: (req, key = 'connect.sid') ->
+    return (req.secureCookies && req.secureCookies[key]) || (req.signedCookies && req.signedCookies[key]) || (req.cookies && req.cookies[key]);
+  @getUriFromReq: (req) ->
+    return url.parse "http://#{req.headers.host}#{req._parsedUrl.pathname}";
   @firePromises: (i, array, nameOfFunc, args) =>
     return new Promise (resolve, reject) =>
       if array? and array.length > 0 and array[i]?

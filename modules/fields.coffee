@@ -2,7 +2,7 @@ Promise = require "bluebird";
 Module = require "../lib/module";
 class Fields extends Module
 
-  onPageFinish: (res, req, page) =>
+  onPageRequestFinish: (res, req, page) =>
     return new Promise (resolve, reject) =>
       @log "fields module started", page.fields?;
       if page.fields?
