@@ -23,14 +23,14 @@ class Sockets extends Module
         uri = url.parse "http://#{info.host}";
         @core.sites.get(info.cookie, uri.hostname).then (site) =>
           @log "fireing onSocketStart", site.events.onSocketStart.length;
-          return site.events.onSocketStart.chain(@session).then () =>
+          return site.events.onSocketStart.chain(@socket).then () =>
             @log "fireing onSocketStart - complete";
             
 
           
       resolve();  
   
-  onSocketStart: (session) =>
+  onSocketStart: (socket) =>
     @log "inner onSocketStart";
   ###
   -- Memory Gap --

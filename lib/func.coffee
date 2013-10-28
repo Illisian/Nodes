@@ -16,7 +16,7 @@ class Util
           resolve();
       , 2000
   @log: () ->
-    console.log "[#{new Date().toUTCString()}]", arguments;
+    #console.log "[#{new Date().toUTCString()}]", arguments;
   @objToArr: (obj) ->
     result = []
     for i in [1..arguments.length]
