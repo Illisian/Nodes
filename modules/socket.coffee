@@ -4,6 +4,7 @@ Module = require "../lib/module";
 Promises = require "../lib/Promises";
 util = require "util"
 SessionSockets = require './lib/session.socket.io'
+cacheStore = require '../lib/cacheStore'
 
 class Sockets extends Module
   constructor: (@options) ->
@@ -22,6 +23,10 @@ class Sockets extends Module
       @session.on "connection", (err, socket, session, info) =>
         uri = url.parse "http://#{info.host}";
         @core.sites.get(info.cookie, uri.hostname).then (site) =>
+          if not site.sockets?
+            site.sockets = new cacheStore();
+          site.sockets.put(info.cookie, "socket", socket);
+          
           @log "fireing onSocketStart", site.events.onSocketStart.length;
           return site.events.onSocketStart.chain(@socket).then () =>
             @log "fireing onSocketStart - complete";

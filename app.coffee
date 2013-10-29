@@ -93,12 +93,6 @@ class MainApp
         resolve();
  
   processRequest: (req, res, next) =>
-   # if req.method.toUpperCase() isnt "GET" and "HEAD" isnt req.method.toUpperCase()
-   #   return next();
-    #req.viewstate = {};
-    #cookie = func.findCookie(req);
-    #req.session.cookie = 
-    #@log "COOKIES", func.findCookieKey(req);
     @loadSite(req, res).then (site) =>
       @log "start site processing"
       site.process(req,res).then (html) =>
