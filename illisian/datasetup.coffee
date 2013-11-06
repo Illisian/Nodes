@@ -71,7 +71,7 @@ class DataSetup
     
       site = new @db.model.site;
       site.name = "Illisian";
-      site.hosts = ["127.0.0.1", "local.illisian.com.au"];
+      site.hosts = ["127.0.0.1", "local.illisian.com.au", "clive.illisian.com.au"];
       site.fields = { sitename: "Illisian" }
       site.paths = {
         base: "/illisian/"

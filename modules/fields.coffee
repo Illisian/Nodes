@@ -5,7 +5,7 @@ class Fields extends Module
   onPageRequestFinish: (res, req, page) =>
     return new Promise (resolve, reject) =>
       @log "fields module started", page.fields?;
-      if page.fields?
+      if page.fields? and page.$?
         @log "fields exist", page.fields?, page.$?;
         arr = page.$('[nodes-field]');
         @log "looking for fields", arr.length;
@@ -15,7 +15,7 @@ class Fields extends Module
             fieldContents = page.fields[fieldName]
             @log "Setting Field #{fieldName} - #{fieldContents}";
             page.$(i).prepend(fieldContents)
-      page.$('[nodes-field]').removeAttr("nodes-field")
+        page.$('[nodes-field]').removeAttr("nodes-field")
       @log "Fields onFinish resolved";
       resolve();
 

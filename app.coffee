@@ -23,6 +23,7 @@ class MainApp
     @sysmodulePath = "#{@config.base_dir}/modules/"; 
     @db = new database @config
     @log = func.log;
+    @debug = func.log;
     @func = func;
     @cache = new cache(this);
     
@@ -123,7 +124,7 @@ class MainApp
           @log "Storing Site"
           return @sites.put(key, uri.hostname, newsite).then () =>
             @log "fireing the onSiteLoad Events"
-            return newsite.events.onSiteLoad.chain(req,res,newsite).then () =>
+            return newsite.events.chain("onSiteLoad",req,res,newsite).then () =>
               resolve(newsite);
         , reject
   loadModule: (path) =>

@@ -2,6 +2,7 @@ cheerio = require 'cheerio'
 consolidate = require 'consolidate'
 Promise = require 'bluebird'
 extend = require 'extend';
+cheerio = require 'cheerio';
 Control = require './control'
 
 class templateControl extends Control
@@ -13,13 +14,14 @@ class templateControl extends Control
     return new Promise (resolve, reject) =>
       @log "onControlTemplateRender Start #{@viewPath}, #{@view.renderer}"
       context = extend(true, this, { req: req, res: res});
-      consolidate[@view.renderer] @viewPath, context, (err, html) =>
+      return consolidate[@view.renderer] @viewPath, context, (err, html) =>
         if err?
           @log "onControlTemplateRender Error", err
           return reject(err);
         @html = html;
+        @$ = cheerio.load @html;
         @log "onControlTemplateRender rendered #{@viewPath}"
-        resolve()
+        return resolve()
   
 #  onControlRender: (next) =>
 #    next();

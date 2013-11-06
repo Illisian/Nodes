@@ -27,10 +27,10 @@ class Sockets extends Module
             site.sockets = new cacheStore();
           site.sockets.put(info.cookie, "socket", socket);
           
-          @log "fireing onSocketStart", site.events.onSocketStart.length;
-          return site.events.onSocketStart.chain(@socket).then () =>
-            @log "fireing onSocketStart - complete";
-            
+          #@log "fireing onSocketStart", site.events.onSocketStart.length;
+          #return site.events.onSocketStart.chain(@socket).then () =>
+            #@log "fireing onSocketStart - complete";
+            #
 
           
       resolve();  
@@ -41,6 +41,11 @@ class Sockets extends Module
   -- Memory Gap --
   ###
   
+  onPageRequestStart: (req,res,control) =>
+    return new Promise (resolve, reject) =>
+      @log "Socket - OnPageRequestStart";
+      return resolve();
+  
   onPageLoad: (req, res, page) =>
     return new Promise (resolve, reject) =>
       page.sockets = {};
@@ -48,10 +53,7 @@ class Sockets extends Module
   
   onSiteLoad: (req, res, site) =>
     return new Promise (resolve, reject) =>
-      site.events.onSocketStart = new Promises();
-      site.refreshEvents("onSocketStart").then () =>
-        return resolve();
-      , reject
-    
+      return resolve();
+
 
 module.exports = Sockets;

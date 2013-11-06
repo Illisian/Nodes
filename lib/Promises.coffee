@@ -20,6 +20,9 @@ class Promises
     @length = @promises.length;
   push: (promise, context, args) =>
     this.add promise, context, args;
+  concat: () =>
+    for i in arguments
+      @promises.concat(i);
   getAll: () =>
     return @promises;
   clear: () =>

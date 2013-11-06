@@ -1,7 +1,7 @@
 Promise = require("bluebird");
-TemplateControl = require("../../lib/templateControl");
+Layout = require("../../lib/controls/layout");
 
-class Main extends TemplateControl
+class Main extends Layout
   view: { file: 'main.jade', renderer: 'jade' }
 
 module.exports = Main;
