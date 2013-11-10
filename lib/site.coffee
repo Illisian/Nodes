@@ -29,10 +29,17 @@ class Site
     
     @sublayoutPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.sublayout}";
     @layoutPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.layout}";
-    @modulePath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.module}"; 
-    
-    @staticPath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.content}";
-    @static = Promise.promisify(express.static(@staticPath));
+    @modulePath = "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.module}";
+    @staticPath = []
+    if func.isArray(@siteData.paths.content)
+      for content in @siteData.paths.content
+        @staticPath.push "#{@config.base_dir}#{@siteData.paths.base}#{content}";
+    else
+      @staticPath.push "#{@config.base_dir}#{@siteData.paths.base}#{@siteData.paths.content}";
+    @static = new Promises()
+    for path in @staticPath
+      @log "Creating Static path: #{path}";
+      @static.push Promise.promisify(express.static(path))
 
     @modules = [];
     
@@ -46,7 +53,7 @@ class Site
   process: (req, res) =>
     return new Promise (resolve, reject) =>
       return @events.chain("onSiteRequestStart", req, res, this).then () =>
-        return @static(req,res).then () =>
+        return @static.chain(req,res).then () =>
           return @loadPage(req,res).then (page) =>
             @debug "Site - process - page.process - start";
             return page.process(req, res).then () =>

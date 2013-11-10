@@ -1,5 +1,5 @@
 Promise = require "bluebird";
-
+Promises = require "../lib/Promises";
 Module = require "../lib/module";
 util = require "util"
 
@@ -7,6 +7,9 @@ fs = require "fs";
 coffee = require "coffee-script"
 paths = require "path";
 cacheStore = require "../lib/cacheStore";
+
+exists = Promise.promisify(require("fs").exists);
+
 class Compiler extends Module
 
   onSiteLoad: (req, res, site) =>
@@ -18,7 +21,21 @@ class Compiler extends Module
     return new Promise (resolve, reject) =>
       path = req._parsedUrl.pathname
       if path.match('.coffee$')
-        file = paths.join @site.staticPath, req._parsedUrl.pathname;
+        loadFiles = new Promises
+        for path in @site.staticPath
+          @log "Adding promises for path #{path}"
+          file = paths.join path, req._parsedUrl.pathname;
+          loadFiles.push @loadFile, this, [req, res, file]
+        return loadFiles.chain().then () =>
+          return resolve();
+          #rejected
+      else
+        return resolve();
+  loadFile: (req, res, file) =>
+    return new Promise (resolve, reject) =>
+      return fs.exists file, (result) =>
+        if not result
+          return resolve();
         @log "Illisian - Compiler Module - found coffee file", file
         return @site.controls.get("compiled", file).then (compiledFile) =>
           @log "Illisian - Compiler Module - sent cached copy", file
@@ -34,10 +51,5 @@ class Compiler extends Module
             @log "Illisian - Compiler Module - file compiled", file
             return @site.controls.put("compiled", file, compiledFile).then () =>
               res.send compiledFile
-              
-          #rejected
-      else
-        resolve();
-
 
 module.exports = Compiler;

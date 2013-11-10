@@ -12,6 +12,8 @@ class Magician extends Module
   onPageRequestStart: (req, res, page) =>
     return new Promise (resolve, reject) =>
       @log "Magician - onPageRequestStart";
+      if page.isLoaded
+        return resolve();
       return @loadControls(page).then () =>
         @log "Magician - onPageRequestStart - finish";
         return resolve();
@@ -20,34 +22,36 @@ class Magician extends Module
   onControlRender: (req, res, control) =>
     return new Promise (resolve, reject) =>
       @log "Magician - onControlRender - start", control.$.length;
-      
-      if control.tagTemplate?
-        targetTag = control.tagTemplate;
-      if control.enablePostback
-        targetTag = "div"
-        if control.tagName?
-          targetTag = control.tagName;
-        if control.createTag
-          control.$ = cheerio.load "<#{targetTag} id='#{control.id}'>#{control.html}</#{targetTag}"
-          control.html = control.$.html();
       return resolve();
 
   onPageRequestFinish: (req, res, page) =>
     return new Promise (resolve, reject) =>
-      controls = []
-      for control in page.controls
-        if control.isLayout
-          page.html = control.html;
-          page.$ = cheerio.load page.html
-        else 
-          controls.push control
+      if not page.isLoaded
+        for control in page.controls
+          if control.isLayout
+            page.html = control.html;
+            page.$ = cheerio.load page.html
       if page.$?
-        for c in controls
-          if c.ref?
-            if c.ref.placeholder?
+        for c in page.controls
+          if not c.element?
+            if c.ref? and not page.isLayout
+              if c.ref.placeholder?
+                tagName = "div";
+                if c.tagName?
+                  tagName = c.tagName;
+                c.element = page.$("<#{tagName}></#{tagName}>").attr("id", c.id).attr("nodes-control","").append(c.html);
+                if c.tagAttributes?
+                  for attrib of c.tagAttributes
+                    page.$(c.element).attr(attrib, c.tagAttributes[attrib]);
+                target = "[nodes-placeholder='#{c.ref.placeholder}']";
+                @log "appending control to #{c.ref.placeholder}";
+                page.$(target).append(c.element);
+          else
+            if page.$(c.element).length > 0
+              page.$(c.element).html(c.html);
+            else 
               target = "[nodes-placeholder='#{c.ref.placeholder}']";
-              @log "appending control to #{c.ref.placeholder}";
-              page.$(target).append(c.html);
+              page.$(target).append(c.element);
               
         return @processSublayoutTags(req, res, page).then () =>
           page.isLoaded = true;
@@ -148,14 +152,11 @@ class Magician extends Module
 
   loadControls: (page) =>
     return new Promise (resolve, reject) =>
-      if page.isLoaded
-        return resolve();
-      else
-        return @loadPageLayout(page).then () =>
-          return @loadPageSublayouts(page).then () =>
-            return resolve();
-          , reject
+      return @loadPageLayout(page).then () =>
+        return @loadPageSublayouts(page).then () =>
+          return resolve();
         , reject
+      , reject
   
   loadControl: (name, baseDir, controlData, page) =>
     return new Promise (resolve, reject) =>

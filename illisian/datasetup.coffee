@@ -81,7 +81,7 @@ class DataSetup
         sublayout: "sublayouts/"
         layout: "layouts/",
         module: "modules/",
-        content: "public/"
+        content: ["public/", "../admin/public/"]
       }
       site.modules = [];
       @log "DataSetup - init - committing variables"
@@ -125,29 +125,52 @@ class DataSetup
     return new Promise (resolve, reject) =>
       @log "DataSetup - adminSetup - start"
       admin = new @db.model.layout;
-      admin.name = "admin";
+      admin.name = "../../admin/layouts/admin";
       
-      adminPage = new @db.model.page;
-      adminPage.name = "Admin";
-      adminPage.index = 2;
-      adminPage.fields = {  }
-      adminPage.path = "/admin/";
-      adminPage.isRoot = false;
-      adminPage.hasChildren = false;
-      adminPage.site = site._id
       adminMenu = new @db.model.sublayout;
-      adminMenu.name = "admin/menu";
-      adminPage.parent = home._id;
+      adminMenu.name = "../../admin/sublayouts/menu";
+      
+      pageeditor = new @db.model.sublayout;
+      pageeditor.name = "../../admin/sublayouts/pageeditor";
+      
+      adminHome = new @db.model.page;
+      adminHome.name = "Admin";
+      adminHome.index = 2;
+      adminHome.fields = {  }
+      adminHome.path = "/admin/";
+      adminHome.isRoot = false;
+      adminHome.hasChildren = true;
+      adminHome.site = site._id
+      adminHome.parent = home._id;
+      
+      adminPageEditor = new @db.model.page;
+      adminPageEditor.name = "Page Editor";
+      adminPageEditor.index = 2;
+      adminPageEditor.fields = {  }
+      adminPageEditor.path = "/admin/pageeditor";
+      adminPageEditor.isRoot = false;
+      adminPageEditor.hasChildren = false;
+      adminPageEditor.site = site._id
+      adminPageEditor.parent = adminHome._id;
+      
       
       return @db.save(admin).then () =>
         return @db.save(adminMenu).then () =>
-          adminPage.layout = { id: admin._id }
-          adminPage.sublayouts = [
-            { placeholder: "adminmenu", id: adminMenu._id, index: 0, attributes: {} }
+          adminHome.layout = { id: admin._id }
+          adminHome.sublayouts = [
+            { placeholder: "menu", id: adminMenu._id, index: 0, attributes: {} }
           ]
-          return @db.save(adminPage).then () =>
-            @log "DataSetup - adminSetup - finished"
-            return resolve();
+          return @db.save(adminHome).then () =>
+            
+            return @db.save(pageeditor).then () =>
+              adminPageEditor.layout = { id: admin._id }
+              adminPageEditor.sublayouts = [
+                { placeholder: "menu", id: adminMenu._id, index: 0, attributes: {} }
+                { placeholder: "content", id: pageeditor._id, index: 0, attributes: {} }
+              ]
+              return @db.save(adminPageEditor).then () =>
+                @log "DataSetup - adminSetup - finished"
+                return resolve();
     
                       
 module.exports = DataSetup

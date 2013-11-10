@@ -17,7 +17,7 @@ Site = new Schema {
     base: { type: String, required: true }
     layout: { type: String, required: true }
     sublayout: { type: String, required: true }
-    content: { type: String, required: true }
+    content: { type: Schema.Types.Mixed, required: true }
     module: { type: String, required: true }
   }
 }

@@ -44,5 +44,5 @@ class Util
           
       else
         return resolve();
-  
+  @isArray: Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
 module.exports = Util;

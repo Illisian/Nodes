@@ -1,0 +1,4 @@
+
+<% for (var i = 0; i < menuItems.length; i++) { %>
+<li><a <% if(menuItems[i].active) { %> class="active" <% } %> href="<%=menuItems[i].path %>"><%=menuItems[i].name %></a></li>
+<% } %>
