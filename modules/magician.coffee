@@ -3,6 +3,7 @@ Promises = require "../lib/Promises";
 Module = require "../lib/module";
 cheerio = require "cheerio";
 paths = require "path";
+uuid = require 'node-uuid';
 
 class Magician extends Module
   constructor: (@options) ->
@@ -16,14 +17,53 @@ class Magician extends Module
         return resolve();
       , reject
     
-    
+  onControlRender: (req, res, control) =>
+    return new Promise (resolve, reject) =>
+      @log "Magician - onControlRender - start", control.$.length;
+      
+      if control.tagTemplate?
+        targetTag = control.tagTemplate;
+      if control.enablePostback
+        targetTag = "div"
+        if control.tagName?
+          targetTag = control.tagName;
+        if control.createTag
+          control.$ = cheerio.load "<#{targetTag} id='#{control.id}'>#{control.html}</#{targetTag}"
+          control.html = control.$.html();
+      return resolve();
+
+  onPageRequestFinish: (req, res, page) =>
+    return new Promise (resolve, reject) =>
+      controls = []
+      for control in page.controls
+        if control.isLayout
+          page.html = control.html;
+          page.$ = cheerio.load page.html
+        else 
+          controls.push control
+      if page.$?
+        for c in controls
+          if c.ref?
+            if c.ref.placeholder?
+              target = "[nodes-placeholder='#{c.ref.placeholder}']";
+              @log "appending control to #{c.ref.placeholder}";
+              page.$(target).append(c.html);
+              
+        return @processSublayoutTags(req, res, page).then () =>
+          page.isLoaded = true;
+          page.html = page.$.html();
+          return resolve();
+        , reject
+      else 
+        return reject();
+      
   processSublayoutTags: (req, res, page) =>
     return new Promise (resolve, reject) =>
-      @log "Magician - onControlAfterRender - start";
+      @log "Magician - processSublayoutTags - start";
       tagCount = page.$('[nodes-sublayout]').length
       if tagCount > 0
         tags = page.$('[nodes-sublayout]').toArray();
-        @log "Magician - onControlAfterRender - tags", tags.length
+        @log "Magician - processSublayoutTags - tags", tags.length
         
         tagPromises = new Promises();
         for sublayoutTag in tags
@@ -74,34 +114,6 @@ class Magician extends Module
       attributes: attributes
     };
     
-  onPageRequestFinish: (req, res, page) =>
-    return new Promise (resolve, reject) =>
-      controls = []
-      for control in page.controls
-        if control.isLayout
-          page.html = control.html;
-          page.$ = cheerio.load page.html
-        else 
-          controls.push control
-      if page.$?
-        for c in controls
-          if c.ref?
-            if c.ref.placeholder?
-              target = "[nodes-placeholder='#{c.ref.placeholder}']";
-              @log "appending control to #{c.ref.placeholder}";
-              page.$(target).append(c.html);
-              
-        return @processSublayoutTags(req, res, page).then () =>
-          page.isLoaded = true;
-          page.html = page.$.html();
-          return resolve();
-        , reject
-      else 
-        return reject();
-      
-      
-      
-      
   loadPageLayout: (page) =>
     return new Promise (resolve, reject) =>
       @log "Magician - loadPageLayout - start", page.pageData;
@@ -158,6 +170,7 @@ class Magician extends Module
           filePath: path,
           workingDir: dir
         });
+        context.id = uuid.v4();
         return resolve(context);
       , reject
     .catch (err) =>

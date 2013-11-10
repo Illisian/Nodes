@@ -2,12 +2,14 @@ util = require "../lib/func";
 Promise = require "bluebird";
 class DataSetup
   constructor: (@main) ->
-     { @db } = @main;
-  init:() =>
+     { @db, @log } = @main;
+  init: () =>
     return new Promise (resolve, reject) =>
       util.log "Creating Illisians Site";
+      @log "DataSetup - init - Start"
       main = new @db.model.layout;
       main.name = "main";
+      
 
       content = new @db.model.sublayout;
       content.name = "content";
@@ -69,6 +71,7 @@ class DataSetup
       projects_nodes.isRoot = false;
       projects_nodes.hasChildren = false;
     
+
       site = new @db.model.site;
       site.name = "Illisian";
       site.hosts = ["127.0.0.1", "local.illisian.com.au", "clive.illisian.com.au"];
@@ -81,8 +84,8 @@ class DataSetup
         content: "public/"
       }
       site.modules = [];
-    
-      @db.save(main).then () =>
+      @log "DataSetup - init - committing variables"
+      return @db.save(main).then () =>
         home.layout = { id: main._id }
         service.layout =  { id: main._id }
         projects.layout = { id: main._id }
@@ -111,7 +114,40 @@ class DataSetup
                     return @db.save(projects).then () =>
                       projects_nodes.parent = projects._id;
                       return @db.save(projects_nodes).then () =>
-                        util.log "Site Created";
-                        resolve();
+                        @log "DataSetup - init - starting admin setup"
+                        return @adminSetup(home, site).then () =>
+                          @log "DataSetup - init - finished"
+                          return resolve();
+      .catch (err) =>
+        @log err
+    
+  adminSetup: (home, site) =>
+    return new Promise (resolve, reject) =>
+      @log "DataSetup - adminSetup - start"
+      admin = new @db.model.layout;
+      admin.name = "admin";
+      
+      adminPage = new @db.model.page;
+      adminPage.name = "Admin";
+      adminPage.index = 2;
+      adminPage.fields = {  }
+      adminPage.path = "/admin/";
+      adminPage.isRoot = false;
+      adminPage.hasChildren = false;
+      adminPage.site = site._id
+      adminMenu = new @db.model.sublayout;
+      adminMenu.name = "admin/menu";
+      adminPage.parent = home._id;
+      
+      return @db.save(admin).then () =>
+        return @db.save(adminMenu).then () =>
+          adminPage.layout = { id: admin._id }
+          adminPage.sublayouts = [
+            { placeholder: "adminmenu", id: adminMenu._id, index: 0, attributes: {} }
+          ]
+          return @db.save(adminPage).then () =>
+            @log "DataSetup - adminSetup - finished"
+            return resolve();
+    
                       
 module.exports = DataSetup

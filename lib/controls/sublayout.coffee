@@ -4,4 +4,4 @@ TemplateControl = require("../templateControl");
 class Sublayout extends TemplateControl
 
 
-module.exports = Layout;
+module.exports = Sublayout;

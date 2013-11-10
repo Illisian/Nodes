@@ -26,6 +26,7 @@
     "connect-assets": "*",
     "socket.io": "*",
     "session.socket.io": "*",
-    "connect": "*"
+    "connect": "*",
+    "node-uuid": "*"
   }
 }
