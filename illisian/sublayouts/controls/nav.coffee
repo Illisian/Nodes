@@ -7,8 +7,6 @@ class Nav extends Control
   view: { file: 'nav.ejs', renderer: 'ejs' }
   onControlDataBind: (req, res) => # provide fields
     return new Promise (resolve, reject) =>
-      @idtest = @idtest || 1;
-      @idtest = @idtest + 1;
       @security = @security || {};
       if req.isAuthenticated()
         @security.name = req.session.passport.user.displayName;

@@ -29,14 +29,15 @@ class ModelLogic
         resolve(results);
   findOne: (filter) =>
     return new Promise (resolve, reject) =>
-      @model.findOne filter, (err, result) =>
+      return @model.findOne filter, (err, result) =>
         if err?
           reject(err);
         if result?
           func.log "findOne [#{@model.modelName}] - [#{result._id}] found", filter
+          return resolve(result);
         else 
           func.log "findOne [#{@model.modelName}] not found", filter
-        resolve(result);
+          return reject();
 
 
 class Pages extends ModelLogic

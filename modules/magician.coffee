@@ -12,8 +12,9 @@ class Magician extends Module
   onPageRequestStart: (req, res, page) =>
     return new Promise (resolve, reject) =>
       @log "Magician - onPageRequestStart";
-      if page.isLoaded
+      if page.isLoaded or page.isLoading
         return resolve();
+      page.isLoading = true; #mmm not having this seems to break control loading, ms async requests can sometimes duplicate all controls on a page.
       return @loadControls(page).then () =>
         @log "Magician - onPageRequestStart - finish";
         return resolve();
@@ -34,30 +35,37 @@ class Magician extends Module
       if page.$?
         for c in page.controls
           if not c.element?
+            
             if c.ref? and not page.isLayout
+              @log "Magician - onPageRequestFinish - element does not exists"
               if c.ref.placeholder?
                 tagName = "div";
                 if c.tagName?
                   tagName = c.tagName;
+                @log "Magician - onPageRequestFinish - setting element"
                 c.element = page.$("<#{tagName}></#{tagName}>").attr("id", c.id).attr("nodes-control","").append(c.html);
                 if c.tagAttributes?
                   for attrib of c.tagAttributes
                     page.$(c.element).attr(attrib, c.tagAttributes[attrib]);
                 target = "[nodes-placeholder='#{c.ref.placeholder}']";
-                @log "appending control to #{c.ref.placeholder}";
+                @log "appending control to #{c.ref.placeholder}"
                 page.$(target).append(c.element);
           else
-            if page.$(c.element).length > 0
-              page.$(c.element).html(c.html);
+            @log "Magician - onPageRequestFinish - checking if placeholder exists on the page?"
+            if page.$("##{c.id}").length > 0
+              @log "Magician - onPageRequestFinish - it Does, setting html"
+              page.$("##{c.id}").html(c.html);
             else 
+              @log "Magician - onPageRequestFinish - it does not... looking for placeholder"
               target = "[nodes-placeholder='#{c.ref.placeholder}']";
               page.$(target).append(c.element);
               
-        return @processSublayoutTags(req, res, page).then () =>
-          page.isLoaded = true;
-          page.html = page.$.html();
-          return resolve();
-        , reject
+        #return @processSublayoutTags(req, res, page).then () =>
+        page.isLoaded = true;
+        page.isLoading = false;
+        page.html = page.$.html();
+        return resolve();
+        #, reject
       else 
         return reject();
       

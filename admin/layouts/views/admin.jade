@@ -1,7 +1,8 @@
 extends layout
 
 block head
-  script(src="/admin/app.coffee")
+
 block content
   div(class='container')
-    div(id='adminMenu', nodes-placeholder='adminmenu', class='row')
+    div(id='adminMenu', nodes-placeholder='menu', class='row')
+    div(id='adminContent', nodes-placeholder='content', class='row')

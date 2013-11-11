@@ -1,0 +1,30 @@
+<style>
+  .adminFrame { 
+   width: 100%;
+   height: 100%;
+  }
+</style>
+
+
+<iframe id='adminFrame' src="/" width="100%" height="600"></iframe>
+
+
+<script>
+$(document).ready(function() {
+  
+$('#adminFrame').load(function() {
+  var adminFrameWindow = document.getElementById('adminFrame').contentWindow;
+  var adminFrameDocument = adminFrameWindow.document;
+  var adminScript = adminFrameDocument.createElement('script');
+
+  adminScript.setAttribute('src','admin/js/require.js');
+  adminScript.setAttribute('type','text/javascript');
+  adminScript.setAttribute('data-main','admin/app.coffee?forceLoad');
+  adminFrameDocument.head.appendChild(adminScript);
+});
+
+
+  
+});
+  //  script(src="/admin/app.coffee")
+</script>

@@ -10,6 +10,11 @@ class Menu extends Sublayout
     @tagAttributes = {
       class: "nav nav-tabs"
     }
+  onControlLoad: (req, res) =>
+    return new Promise (resolve, reject) =>
+      @menuItems = [{active: true, path: '/admin/pageeditor', name: "Page Editor" }]
+      #@log "Menu - onControlRender", this;
+      return resolve();
 
 
 module.exports = Menu;

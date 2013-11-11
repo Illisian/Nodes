@@ -10,6 +10,8 @@ class DataSetup
       main = new @db.model.layout;
       main.name = "main";
       
+      nav = new @db.model.sublayout;
+      nav.name = "controls/nav";      
 
       content = new @db.model.sublayout;
       content.name = "content";
@@ -92,32 +94,40 @@ class DataSetup
         projects_nodes.layout = { id: main._id }
         return @db.save(panel).then () =>
           return @db.save(content).then () =>
-            panel1_attr = { header: "panel1_header", content: "panel1_content" }
-            panel2_attr = { header: "panel2_header", content: "panel2_content" }
-            panel3_attr = { header: "panel3_header", content: "panel3_content" }
-            home.sublayouts = [
-              { placeholder: "content", id: content._id, index: 0, attributes: {} }
-              { placeholder: "panels", id: panel._id, index: 1, attributes: panel1_attr }
-              { placeholder: "panels", id: panel._id, index: 2, attributes: panel2_attr}
-              { placeholder: "panels", id: panel._id, index: 3, attributes: panel3_attr }
-            ]
-            return @db.save(home).then () =>
-              site.root = home._id;
-              return @db.save(site).then () =>
-                home.site = site._id
-                return @db.save(home).then () =>
-                  service.parent = home._id;
-                  service.site = site._id
-                  projects.parent = home._id;
-                  projects.site = site._id;
-                  return @db.save(service).then () =>
-                    return @db.save(projects).then () =>
-                      projects_nodes.parent = projects._id;
-                      return @db.save(projects_nodes).then () =>
-                        @log "DataSetup - init - starting admin setup"
-                        return @adminSetup(home, site).then () =>
-                          @log "DataSetup - init - finished"
-                          return resolve();
+            return @db.save(nav).then () =>
+              panel1_attr = { header: "panel1_header", content: "panel1_content" }
+              panel2_attr = { header: "panel2_header", content: "panel2_content" }
+              panel3_attr = { header: "panel3_header", content: "panel3_content" }
+              home.sublayouts = [
+                { placeholder: "nav", id: nav._id, index: 0, attributes: {} }
+                { placeholder: "content", id: content._id, index: 1, attributes: {} }
+                { placeholder: "panels", id: panel._id, index: 2, attributes: panel1_attr }
+                { placeholder: "panels", id: panel._id, index: 3, attributes: panel2_attr}
+                { placeholder: "panels", id: panel._id, index: 4, attributes: panel3_attr }
+              ]
+              service.sublayouts = [
+                { placeholder: "nav", id: nav._id, index: 0, attributes: {} }
+              ]
+              projects.sublayouts = [
+                { placeholder: "nav", id: nav._id, index: 0, attributes: {} }
+              ]
+              return @db.save(home).then () =>
+                site.root = home._id;
+                return @db.save(site).then () =>
+                  home.site = site._id
+                  return @db.save(home).then () =>
+                    service.parent = home._id;
+                    service.site = site._id
+                    projects.parent = home._id;
+                    projects.site = site._id;
+                    return @db.save(service).then () =>
+                      return @db.save(projects).then () =>
+                        projects_nodes.parent = projects._id;
+                        return @db.save(projects_nodes).then () =>
+                          @log "DataSetup - init - starting admin setup"
+                          return @adminSetup(home, site).then () =>
+                            @log "DataSetup - init - finished"
+                            return resolve();
       .catch (err) =>
         @log err
     

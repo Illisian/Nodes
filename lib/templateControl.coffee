@@ -14,6 +14,9 @@ class templateControl extends Control
     return new Promise (resolve, reject) =>
       @log "onControlTemplateRender Start #{@viewPath}, #{@view.renderer}"
       context = extend(true, this, { req: req, res: res});
+      
+      #@log "onControlTemplateRender Context", context
+      
       return consolidate[@view.renderer] @viewPath, context, (err, html) =>
         if err?
           @log "onControlTemplateRender Error", err
