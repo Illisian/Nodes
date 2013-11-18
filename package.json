@@ -1,10 +1,11 @@
 {
   "name": "nodes",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "engine": "node >= 0.10",
   "private": true,
   "scripts": {
-    "start": "node build/app.js"
+    "start": "forever --watch build/app.js"
+    "travis": "grunt default --verbose"
   },
   "dependencies": {
     "express": "3.4.0",
@@ -28,8 +29,7 @@
     "socket.io": "*",
     "session.socket.io": "*",
     "connect": "*",
-    "node-uuid": "*",
-    "nodetime": "*"
+    "node-uuid": "*"
   },
   "devDependencies": {
     "grunt": "*",
@@ -38,6 +38,30 @@
     "grunt-contrib-coffee": "*",
     "grunt-contrib-watch": "*",
     "grunt-plato": "*",
-    "grunt-install-dependencies": "*"
+    "grunt-install-dependencies": "*",
+    "projectz": "*",
+    "nodetime": "*"
+  },
+  "description": "its a CMS yey",
+  "keywords": [
+    "nodejs",
+    " coffeescript",
+    " content management system",
+    " javascript",
+    " modular"
+  ],
+  "author": "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)",
+  "maintainers": [
+    "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"
+  ],
+  "contributors": [
+    "Azerothian (https://github.com/Azerothian)"
+  ],
+  "bugs": {
+    "url": "https://github.com/Illisian/Nodes/issues"
+  },
+  "license": {
+    "type": "GPLv2",
+    "url": "http://choosealicense.com/licenses/gpl-v2/"
   }
 }

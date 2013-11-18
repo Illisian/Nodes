@@ -1,0 +1,69 @@
+{   
+    # Project's human readable name
+    title: "Nodes" 
+
+    # Project slug name
+    name: "nodes"
+
+    # Project GitHub repository full name
+    # If `repository` is set, or if `homepage` is a GitHub URL, we set this automatically
+    repo: "Illisian/Nodes"
+
+    # Project's homepage URL
+    # If `repo`, `repository`, or `demo` is set, we set this automatically
+    homepage: "https://github.com/Illisian/Nodes"
+
+    # Project's demo URL
+    # If `homepage` or  is set, we set this automatically
+    demo: "https://github.com/Illisian/Nodes"
+
+    # Project description
+    description: "its a CMS yey"
+
+    # Project keywords
+    # Can be an array or CSV string
+    keywords: "nodejs,coffeescript,content management system,javascript"
+
+    # Project's author details
+    # Can be an array or CSV string
+    authors: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+    author: null
+
+    # Maintainers
+    # Can be an array or CSV string
+    maintainers: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+    maintainer: null
+
+    # Sponsors
+    # Can be an array or CSV string
+    sponsors: ["Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)"]
+
+    # Contributors
+    # Pulled in automatically from the GitHub Repository API and the GitHub Repository's `package.json` file
+    contributors: null
+
+    # Project's license details
+    # Can be an array or CSV string
+    license: {type:"GPLv2", url:"http://choosealicense.com/licenses/gpl-v2/"}
+    licenses: null
+
+    # Project's repository details
+    # If `repo` is set, or if `homepage` is a GitHub URL, we set this automatically
+    repository:
+        type: "git"
+        url: "https://github.com/Illisian/Nodes.git"
+
+    # Project's repository details
+    # If `repo` is set, or if `homepage` is a GitHub URL, we set this automatically
+    bugs:
+        url: "https://github.com/Illisian/Nodes/issues"
+
+    # Project's badges for use in the readme files
+    badges:
+        travis: false
+        npm: false
+        gittip: false
+        #flattr: "344188/balupton-on-Flattr"
+        #paypal: "QB8GQPZAH84N6"
+
+}

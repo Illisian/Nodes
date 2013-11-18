@@ -1,65 +1,92 @@
-Nodes
-=========
-
-Nodes is a content management system coded in [coffee-script] for [node.js]. It uses [mongodb] for the backend
-
-Features
-----
-  - Control typed components i.e. basic js/view implementation
-  - Dynamic Events Control and module implementation
-  - Inline Tags to embedded controls
-  - Persistent Memory per page using SessionID 
-  - Dynamic compiling of resources
+<!-- TITLE -->
+<!-- BADGES/ -->
 
 
-System Event Process
-----
-  - onSiteStart
-  - onPageLoad
-  - isPostBack ? onControlPostBack : onControlLoad
-  - onControlBeforeRender
-  - onControlDataBind
-  - onControlTemplateRender
-  - onControlRender
-  - onControlAfterRender
-  - onPageFinish
-  - onSiteFinish
 
-Tech
-----
-  - [express.js] - Http Engine
-  - [bluebird] - Promises
-  - [consolidate] - View Engine
-  - [mongoose] - ORM
-  - [mongodb] - Database
 
-Future
-----
-  - Admin Console
-  - Modulerised components
-  - etc
+<!-- /BADGES -->
 
-Installation
----
 
-This takes the assumption that you already are running a mongodb instance.
+<!-- DESCRIPTION/ -->
 
-```sh
-git clone https://github.com/Illisian/Nodes.git nodes
-cd nodes
-npm install
+its a CMS yey
 
-edit config.coffee & illisian/datasetup.coffee: site.hosts to match your settings
+<!-- /DESCRIPTION -->
 
-coffee app.coffee
 
-```
+<!-- INSTALL/ -->
 
-  [consolidate]: https://github.com/visionmedia/consolidate.js
-  [express.js]: http://expressjs.com/
-  [coffee-script]: http://coffeescript.org/
-  [node.js]: nodejs.org
-  [bluebird]: https://github.com/petkaantonov/bluebird
-  [mongoose]: http://mongoosejs.com/
-  [mongodb]: http://www.mongodb.org/
-    
+## Install
+
+### [Node](http://nodejs.org/), [Browserify](http://browserify.org/)
+- Use: `require('nodes')`
+- Install: `npm install --save nodes`
+
+### [Ender](http://ender.jit.su/)
+- Use: `require('nodes')`
+- Install: `ender add nodes`
+
+<!-- /INSTALL -->
+
+
+## Usage
+Usage instructions go here
+<!-- HISTORY/ -->
+
+## History
+[Discover the change history by heading on over to the `History.md` file.](https://github.com/Illisian/nodes/blob/master/History.md#files)
+
+<!-- /HISTORY -->
+
+
+<!-- CONTRIBUTE/ -->
+
+## Contribute
+
+[Discover how you can contribute by heading on over to the `Contributing.md` file.](https://github.com/Illisian/nodes/blob/master/Contributing.md#files)
+
+<!-- /CONTRIBUTE -->
+
+
+<!-- BACKERS/ -->
+
+## Backers
+
+### Maintainers
+
+These amazing people are maintaining this project:
+
+- Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)
+
+### Sponsors
+
+These amazing people have contributed finances to this project:
+
+- Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)
+
+Become a sponsor!
+
+
+
+### Contributors
+
+These amazing people have contributed code to this project:
+
+- Azerothian (https://github.com/Azerothian) - [view contributions](https://github.com/Illisian/Nodes/commits?author=Azerothian)
+
+[Become a contributor!](https://github.com/Illisian/nodes/blob/master/Contributing.md#files)
+
+<!-- /BACKERS -->
+
+
+<!-- LICENSE/ -->
+
+## License
+
+Licensed under [GPLv2](http://choosealicense.com/licenses/gpl-v2/)
+
+Copyright &copy; Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)
+
+<!-- /LICENSE -->
+
+

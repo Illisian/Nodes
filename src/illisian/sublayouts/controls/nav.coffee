@@ -18,7 +18,7 @@ class Nav extends Control
       return @db.logic.site.getRootPage(@site.siteData).then (pageData) =>
         @log "onControlDataBind getRootPage page response"
         if pageData?
-          @log "onControlDataBind getChildren children"
+          @log "onControlDataBind getChildren children", pageData
           return @db.logic.page.getChildren(pageData).then (childrenData) =>
             @log "onControlDataBind getChildren children response"
             pages = [].concat(childrenData);
