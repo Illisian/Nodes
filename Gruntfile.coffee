@@ -40,7 +40,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-plato';
   grunt.loadNpmTasks 'grunt-install-dependencies';
   
-  
+  grunt.registerTask 'test', 'Runs build and test', [ 'copy', 'coffee' ]
   grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato' ]
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
  

@@ -60,7 +60,7 @@
 
     # Project's badges for use in the readme files
     badges:
-        travis: false
+        travis: true
         npm: false
         gittip: false
         #flattr: "344188/balupton-on-Flattr"
