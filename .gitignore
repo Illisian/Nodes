@@ -14,3 +14,4 @@ node_modules
 npm-debug.log
 config.coffee
 build
+report
