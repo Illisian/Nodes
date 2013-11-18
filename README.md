@@ -14,23 +14,15 @@ its a CMS yey
 <!-- /DESCRIPTION -->
 
 
-<!-- INSTALL/ -->
-
 ## Install
 
-### [Node](http://nodejs.org/), [Browserify](http://browserify.org/)
-- Use: `require('nodes')`
-- Install: `npm install --save nodes`
-
-### [Ender](http://ender.jit.su/)
-- Use: `require('nodes')`
-- Install: `ender add nodes`
-
-<!-- /INSTALL -->
+### Git
+- Clone: https://github.com/Illisian/Nodes.git
 
 
 ## Usage
-Usage instructions go here
+etc
+
 <!-- HISTORY/ -->
 
 ## History

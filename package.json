@@ -32,6 +32,7 @@
     "node-uuid": "*"
   },
   "devDependencies": {
+    "grunt-cli": "*",
     "grunt": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-clean": "*",
