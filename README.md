@@ -1,7 +1,7 @@
 <!-- TITLE -->
 <!-- BADGES/ -->
 
-
+[![Build Status](http://img.shields.io/travis-ci/Illisian/nodes.png?branch=master)](http://travis-ci.org/Illisian/nodes "Check this project's build status on TravisCI")
 
 
 <!-- /BADGES -->

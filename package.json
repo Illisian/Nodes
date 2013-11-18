@@ -44,10 +44,9 @@
   "description": "its a CMS yey",
   "keywords": [
     "nodejs",
-    " coffeescript",
-    " content management system",
-    " javascript",
-    " modular"
+    "coffeescript",
+    "content management system",
+    "javascript"
   ],
   "author": "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)",
   "maintainers": [
