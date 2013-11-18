@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>app.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">69.09</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">240</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">44.92</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">3.21</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var MainApp, Promise, Promises, cache, cacheStore, config, database, express, func, http, site, util,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  config = require(&quot;./config&quot;);
+
+  database = require(&quot;./lib/database&quot;);
+
+  func = require(&quot;./lib/func&quot;);
+
+  cache = require(&quot;./lib/cache&quot;);
+
+  site = require(&quot;./lib/site&quot;);
+
+  Promises = require(&quot;./lib/Promises&quot;);
+
+  cacheStore = require(&quot;./lib/cacheStore&quot;);
+
+  util = require(&#039;util&#039;);
+
+  express = require(&quot;express&quot;);
+
+  http = require(&quot;http&quot;);
+
+  Promise = require(&quot;bluebird&quot;);
+
+  Promise.longStackTraces();
+
+  MainApp = (function() {
+    function MainApp() {
+      this.unixSockFree = __bind(this.unixSockFree, this);
+      this.unixSockUnlink = __bind(this.unixSockUnlink, this);
+      this.loadModule = __bind(this.loadModule, this);
+      this.loadSite = __bind(this.loadSite, this);
+      this.processRequest = __bind(this.processRequest, this);
+      this.loadApps = __bind(this.loadApps, this);
+      this.setupData = __bind(this.setupData, this);
+      this.expressSetup = __bind(this.expressSetup, this);
+      this.finished = __bind(this.finished, this);
+      this.init = __bind(this.init, this);
+      var m, _i, _len, _ref;
+      this.config = new config;
+      this.sysmodulePath = &quot;&quot; + this.config.base_dir + &quot;/modules/&quot;;
+      this.db = new database(this.config);
+      this.log = func.log;
+      this.debug = func.log;
+      this.func = func;
+      this.cache = new cache(this);
+      this.modules = new cacheStore();
+      this.sites = new cacheStore();
+      this.sockets = {};
+      this.events = {
+        onAppConfig: new Promises(),
+        onAppStart: new Promises()
+      };
+      this.modules = [];
+      _ref = this.config.modules;
+      for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+        m = _ref[_i];
+        this.modules.push(this.loadModule(&quot;&quot; + this.sysmodulePath + m));
+      }
+    }
+
+    MainApp.prototype.init = function() {
+      var _this = this;
+      return this.unixSockUnlink().then(this.expressSetup).then(this.unixSockFree).then(this.setupData).then(this.loadApps).then(this.finished)[&quot;catch&quot;](function(err) {
+        return _this.log(&quot;An Error has occurred while running init&quot;, err);
+      });
+    };
+
+    MainApp.prototype.finished = function() {
+      return console.log(&quot;nodes cms has started&quot;);
+    };
+
+    MainApp.prototype.expressSetup = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var setting, _i, _j, _len, _len1, _ref, _ref1;
+        _this.log(&quot;setting up express&quot;);
+        _this.express = express();
+        _this.express.set(&quot;port&quot;, _this.config.host.port);
+        _this.log(&quot;setting up express - enable&quot;);
+        _ref = _this.config.express.enable;
+        for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+          setting = _ref[_i];
+          _this.express.enable(setting);
+        }
+        _this.log(&quot;setting up express - use&quot;);
+        _ref1 = _this.config.express.use;
+        for (_j = 0, _len1 = _ref1.length; _j &lt; _len1; _j++) {
+          setting = _ref1[_j];
+          _this.express.use(setting);
+        }
+        _this.log(&quot;setting up express - onAppConfig.chain&quot;, _this.events.onAppConfig.length);
+        return _this.events.onAppConfig.chain(_this.express).then(function() {
+          _this.express.use(express.bodyParser());
+          _this.express.use(_this.processRequest);
+          _this.server = http.createServer(_this.express);
+          return _this.server.listen(_this.express.get(&quot;port&quot;), function() {
+            _this.events.onAppStart.chain(_this.express, _this.server).then(function() {});
+            _this.log(&quot;express is now listening on &quot; + _this.config.host.port);
+            return resolve();
+          });
+        }, reject);
+      });
+    };
+
+    MainApp.prototype.setupData = function() {
+      return this.db.init().then(this.db.clearDb).then(function() {
+        return func.log(&quot;database init has finished&quot;);
+      });
+    };
+
+    MainApp.prototype.loadApps = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var a, app, path, promises, _i, _len, _ref;
+        func.log(&quot;loading apps&quot;);
+        promises = [];
+        _ref = _this.config.apps;
+        for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+          app = _ref[_i];
+          path = &quot;&quot; + _this.config.base_dir + &quot;/&quot; + app + &quot;/app&quot;;
+          _this.log(&quot;Loading app - &quot; + app + &quot; @ &quot; + path);
+          a = require(path);
+          _this.cache.apps[app] = new a(_this);
+          promises.push(_this.cache.apps[app].init());
+        }
+        return Promise.all(promises).then(function() {
+          return resolve();
+        });
+      });
+    };
+
+    MainApp.prototype.processRequest = function(req, res, next) {
+      var _this = this;
+      return this.loadSite(req, res).then(function(site) {
+        _this.log(&quot;start site processing&quot;);
+        return site.process(req, res).then(function(html) {
+          if (html != null) {
+            _this.log(&quot;sending html&quot;);
+            res.send(html);
+          } else {
+            _this.log(&quot;html not provided&quot;);
+            return next();
+          }
+        }, function() {
+          _this.log(&quot;processRequest - not handled&quot;, arguments);
+          return next();
+        });
+      })[&quot;catch&quot;](function(err) {
+        if (err != null) {
+          return _this.log(&quot;processRequest - catch -&quot; + err, err.stack);
+        }
+      });
+    };
+
+    MainApp.prototype.loadSite = function(req, res) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var key, uri;
+        uri = func.getUriFromReq(req);
+        key = func.findCookieKey(req);
+        return _this.sites.get(key, uri.hostname).then(function(site) {
+          return resolve(site);
+        }, function() {
+          return _this.db.logic.site.findOne({
+            hosts: uri.hostname
+          }).then(function(siteData) {
+            var newsite;
+            _this.log(&quot;Starting Site&quot;);
+            newsite = new site(_this, siteData);
+            _this.log(&quot;Storing Site&quot;);
+            return _this.sites.put(key, uri.hostname, newsite).then(function() {
+              _this.log(&quot;fireing the onSiteLoad Events&quot;);
+              return newsite.events.chain(&quot;onSiteLoad&quot;, req, res, newsite).then(function() {
+                return resolve(newsite);
+              });
+            });
+          }, reject);
+        });
+      });
+    };
+
+    MainApp.prototype.loadModule = function(path) {
+      var event, mod, newmod, _results;
+      this.log(&quot;Loading Module &quot; + path);
+      mod = this.cache.getControl(path);
+      newmod = new mod({
+        core: this
+      });
+      _results = [];
+      for (event in this.events) {
+        if (newmod[event] != null) {
+          this.log(&quot;loadModule - event - &quot; + event);
+          _results.push(this.events[event].add(newmod[event]));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    MainApp.prototype.unixSockUnlink = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        if (_this.config.host.is_sock) {
+          _this.log(&quot;unlinking unix sock - &quot; + _this.config.host.port);
+          return func.unlink(_this.config.host.port).then(function() {
+            _this.log(&quot;unlinking unix sock - complete&quot;);
+            return resolve();
+          });
+        } else {
+          return resolve();
+        }
+      });
+    };
+
+    MainApp.prototype.unixSockFree = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        if (_this.config.host.is_sock) {
+          _this.log(&quot;setting chmod 777 on unix sock - &quot; + _this.config.host.port);
+          return func.freeforall(_this.config.host.port).then(function() {
+            _this.log(&quot;setting chmod 777 on unix sock - complete&quot;);
+            return resolve();
+          });
+        } else {
+          return resolve();
+        }
+      });
+    };
+
+    return MainApp;
+
+  })();
+
+  new MainApp().init();
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

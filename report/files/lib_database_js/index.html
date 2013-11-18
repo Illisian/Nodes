@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>lib/database.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">73.16</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">219</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">39.03</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">2.17</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var Database, Layouts, ModelLogic, Pages, Promise, Sites, Sublayouts, func, mongoose, schemas, u, _ref, _ref1, _ref2, _ref3,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  mongoose = require(&#039;mongoose&#039;);
+
+  Promise = require(&quot;bluebird&quot;);
+
+  schemas = require(&quot;./schemas&quot;);
+
+  func = require(&#039;./func&#039;);
+
+  u = require(&#039;util&#039;);
+
+  ModelLogic = (function() {
+    function ModelLogic(db) {
+      this.db = db;
+      this.findOne = __bind(this.findOne, this);
+      this.find = __bind(this.find, this);
+      this.remove = __bind(this.remove, this);
+      if (this.modelName == null) {
+        throw &quot;Model Name is not defined&quot;;
+      }
+      if (this.schema == null) {
+        throw &quot;Schema is not defined&quot;;
+      }
+      func.log(&quot;Init model: &quot; + this.modelName);
+      this.model = mongoose.model(this.modelName, this.schema);
+    }
+
+    ModelLogic.prototype.remove = function(filter) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.model.remove(filter, function(err) {
+          if (err != null) {
+            reject(err);
+          }
+          return resolve();
+        });
+      });
+    };
+
+    ModelLogic.prototype.find = function(filter, sort) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.model.find(filter, null, {
+          sort: sort
+        }, function(err, results) {
+          if (err != null) {
+            reject(err);
+          }
+          return resolve(results);
+        });
+      });
+    };
+
+    ModelLogic.prototype.findOne = function(filter) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.model.findOne(filter, function(err, result) {
+          if (err != null) {
+            reject(err);
+          }
+          if (result != null) {
+            func.log(&quot;findOne [&quot; + _this.model.modelName + &quot;] - [&quot; + result._id + &quot;] found&quot;, filter);
+            return resolve(result);
+          } else {
+            func.log(&quot;findOne [&quot; + _this.model.modelName + &quot;] not found&quot;, filter);
+            return reject();
+          }
+        });
+      });
+    };
+
+    return ModelLogic;
+
+  })();
+
+  Pages = (function(_super) {
+    __extends(Pages, _super);
+
+    function Pages() {
+      this.getChildren = __bind(this.getChildren, this);
+      _ref = Pages.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Pages.prototype.modelName = &quot;page&quot;;
+
+    Pages.prototype.schema = schemas.Page;
+
+    Pages.prototype.getChildren = function(page) {
+      return this.find({
+        parent: page._id
+      }, {
+        sort: {
+          index: &#039;desc&#039;
+        }
+      });
+    };
+
+    return Pages;
+
+  })(ModelLogic);
+
+  Sites = (function(_super) {
+    __extends(Sites, _super);
+
+    function Sites() {
+      this.getRootPage = __bind(this.getRootPage, this);
+      _ref1 = Sites.__super__.constructor.apply(this, arguments);
+      return _ref1;
+    }
+
+    Sites.prototype.modelName = &quot;site&quot;;
+
+    Sites.prototype.schema = schemas.Site;
+
+    Sites.prototype.getRootPage = function(site) {
+      return this.db.logic.page.findOne({
+        _id: site.root
+      });
+    };
+
+    return Sites;
+
+  })(ModelLogic);
+
+  Layouts = (function(_super) {
+    __extends(Layouts, _super);
+
+    function Layouts() {
+      _ref2 = Layouts.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    Layouts.prototype.modelName = &quot;layout&quot;;
+
+    Layouts.prototype.schema = schemas.Layout;
+
+    return Layouts;
+
+  })(ModelLogic);
+
+  Sublayouts = (function(_super) {
+    __extends(Sublayouts, _super);
+
+    function Sublayouts() {
+      _ref3 = Sublayouts.__super__.constructor.apply(this, arguments);
+      return _ref3;
+    }
+
+    Sublayouts.prototype.modelName = &quot;sublayout&quot;;
+
+    Sublayouts.prototype.schema = schemas.Sublayout;
+
+    return Sublayouts;
+
+  })(ModelLogic);
+
+  Database = (function() {
+    function Database(config) {
+      this.config = config;
+      this.clearDb = __bind(this.clearDb, this);
+      this.init = __bind(this.init, this);
+    }
+
+    Database.prototype.save = function(model) {
+      return new Promise(function(resolve, reject) {
+        return model.save(function() {
+          return resolve();
+        });
+      });
+    };
+
+    Database.prototype.init = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        func.log(&quot;database init has started&quot;);
+        _this.logic = {
+          site: new Sites(_this),
+          page: new Pages(_this),
+          layout: new Layouts(_this),
+          sublayout: new Sublayouts(_this)
+        };
+        _this.model = {
+          site: _this.logic.site.model,
+          page: _this.logic.page.model,
+          layout: _this.logic.layout.model,
+          sublayout: _this.logic.sublayout.model
+        };
+        mongoose.connect(&quot;&quot; + _this.config.database.ip + &quot;/&quot; + _this.config.database.name);
+        _this.db = mongoose.connection;
+        _this.db.on(&#039;error&#039;, console.error.bind(console, &#039;connection error:&#039;));
+        return _this.db.once(&#039;open&#039;, function() {
+          return resolve();
+        });
+      });
+    };
+
+    Database.prototype.clearDb = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.logic.site.remove({}).then(_this.logic.page.remove({})).then(_this.logic.layout.remove({})).then(_this.logic.sublayout.remove({})).then(function() {
+          func.log(&quot;Database has been cleared!&quot;);
+          return resolve();
+        });
+      });
+    };
+
+    return Database;
+
+  })();
+
+  module.exports = Database;
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

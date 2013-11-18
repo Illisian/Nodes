@@ -37,6 +37,7 @@
     "grunt-contrib-clean": "*",
     "grunt-contrib-coffee": "*",
     "grunt-contrib-watch": "*",
-    "grunt-plato": "*"
+    "grunt-plato": "*",
+    "grunt-install-dependencies": "*"
   }
 }

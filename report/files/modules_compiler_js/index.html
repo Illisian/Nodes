@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>modules/compiler.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">71.51</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">114</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">32.48</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">1.25</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var Compiler, Module, Promise, Promises, cacheStore, coffee, exists, fs, paths, util, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Promise = require(&quot;bluebird&quot;);
+
+  Promises = require(&quot;../lib/Promises&quot;);
+
+  Module = require(&quot;../lib/module&quot;);
+
+  util = require(&quot;util&quot;);
+
+  fs = require(&quot;fs&quot;);
+
+  coffee = require(&quot;coffee-script&quot;);
+
+  paths = require(&quot;path&quot;);
+
+  cacheStore = require(&quot;../lib/cacheStore&quot;);
+
+  exists = Promise.promisify(require(&quot;fs&quot;).exists);
+
+  Compiler = (function(_super) {
+    __extends(Compiler, _super);
+
+    function Compiler() {
+      this.loadFile = __bind(this.loadFile, this);
+      this.onSiteRequestStart = __bind(this.onSiteRequestStart, this);
+      this.onSiteLoad = __bind(this.onSiteLoad, this);
+      _ref = Compiler.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Compiler.prototype.donotcache = true;
+
+    Compiler.prototype.onSiteLoad = function(req, res, site) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        site.controls = new cacheStore();
+        return resolve();
+      });
+    };
+
+    Compiler.prototype.onSiteRequestStart = function(req, res, site) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var file, loadFiles, path, _i, _len, _ref1;
+        path = req._parsedUrl.pathname;
+        if (path.match(&#039;.coffee$&#039;)) {
+          loadFiles = new Promises;
+          _ref1 = _this.site.staticPath;
+          for (_i = 0, _len = _ref1.length; _i &lt; _len; _i++) {
+            path = _ref1[_i];
+            _this.log(&quot;Adding promises for path &quot; + path);
+            file = paths.join(path, req._parsedUrl.pathname);
+            loadFiles.push(_this.loadFile, _this, [req, res, file]);
+          }
+          return loadFiles.chain().then(function() {
+            return resolve();
+          });
+        } else {
+          return resolve();
+        }
+      });
+    };
+
+    Compiler.prototype.loadFile = function(req, res, file) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return site.controls.getFile(file, true).then(function(file) {
+          return _this.log(&quot;Success&quot;);
+        }, function() {
+          return _this.log(&quot;Reject&quot;);
+        });
+        return fs.exists(file, function(result) {
+          if (!result) {
+            return resolve();
+          }
+          _this.log(&quot;Illisian - Compiler Module - found coffee file&quot;, file);
+          return _this.site.controls.get(&quot;compiled&quot;, file).then(function(compiledFile) {
+            _this.log(&quot;Illisian - Compiler Module - sent cached copy&quot;, file);
+            return res.send(compiledFile);
+          }, function() {
+            _this.log(&quot;Illisian - Compiler Module - cached copy not found&quot;, file);
+            return _this.site.controls.getFile(file).then(function(fileData) {
+              var compiledFile, err;
+              _this.log(&quot;Illisian - Compiler Module - file cached - compile with coffee&quot;, file);
+              try {
+                compiledFile = coffee.compile(fileData, {
+                  filename: file
+                });
+              } catch (_error) {
+                err = _error;
+                _this.log(&quot;Compiler&quot;, err);
+              }
+              _this.log(&quot;Illisian - Compiler Module - file compiled&quot;, file);
+              return _this.site.controls.put(&quot;compiled&quot;, file, compiledFile).then(function() {
+                return res.send(compiledFile);
+              });
+            });
+          });
+        });
+      });
+    };
+
+    return Compiler;
+
+  })(Module);
+
+  module.exports = Compiler;
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

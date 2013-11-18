@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>modules/magician.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">66.68</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">285</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">61.31</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">3.90</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var Magician, Module, Promise, Promises, cheerio, paths, uuid,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Promise = require(&quot;bluebird&quot;);
+
+  Promises = require(&quot;../lib/Promises&quot;);
+
+  Module = require(&quot;../lib/module&quot;);
+
+  cheerio = require(&quot;cheerio&quot;);
+
+  paths = require(&quot;path&quot;);
+
+  uuid = require(&#039;node-uuid&#039;);
+
+  Magician = (function(_super) {
+    __extends(Magician, _super);
+
+    function Magician(options) {
+      this.options = options;
+      this.loadControl = __bind(this.loadControl, this);
+      this.loadControls = __bind(this.loadControls, this);
+      this.loadSublayout = __bind(this.loadSublayout, this);
+      this.loadPageSublayouts = __bind(this.loadPageSublayouts, this);
+      this.loadPageLayout = __bind(this.loadPageLayout, this);
+      this.getTagDetails = __bind(this.getTagDetails, this);
+      this.sublayoutTagProcessor = __bind(this.sublayoutTagProcessor, this);
+      this.processSublayoutTags = __bind(this.processSublayoutTags, this);
+      this.onPageRequestFinish = __bind(this.onPageRequestFinish, this);
+      this.onControlRender = __bind(this.onControlRender, this);
+      this.onPageRequestStart = __bind(this.onPageRequestStart, this);
+      Magician.__super__.constructor.apply(this, arguments);
+    }
+
+    Magician.prototype.onPageRequestStart = function(req, res, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        _this.log(&quot;Magician - onPageRequestStart&quot;);
+        if (page.isLoaded || page.isLoading) {
+          return resolve();
+        }
+        page.isLoading = true;
+        return _this.loadControls(page).then(function() {
+          _this.log(&quot;Magician - onPageRequestStart - finish&quot;);
+          return resolve();
+        }, reject);
+      });
+    };
+
+    Magician.prototype.onControlRender = function(req, res, control) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        _this.log(&quot;Magician - onControlRender - start&quot;, control.$.length);
+        return resolve();
+      });
+    };
+
+    Magician.prototype.onPageRequestFinish = function(req, res, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var attrib, c, control, tagName, target, _i, _j, _len, _len1, _ref, _ref1;
+        if (!page.isLoaded) {
+          _ref = page.controls;
+          for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+            control = _ref[_i];
+            if (control.isLayout) {
+              page.html = control.html;
+              page.$ = cheerio.load(page.html);
+            }
+          }
+        }
+        if (page.$ != null) {
+          _ref1 = page.controls;
+          for (_j = 0, _len1 = _ref1.length; _j &lt; _len1; _j++) {
+            c = _ref1[_j];
+            if (c.element == null) {
+              if ((c.ref != null) &amp;&amp; !page.isLayout) {
+                _this.log(&quot;Magician - onPageRequestFinish - element does not exists&quot;);
+                if (c.ref.placeholder != null) {
+                  tagName = &quot;div&quot;;
+                  if (c.tagName != null) {
+                    tagName = c.tagName;
+                  }
+                  _this.log(&quot;Magician - onPageRequestFinish - setting element&quot;);
+                  c.element = page.$(&quot;&lt;&quot; + tagName + &quot;&gt;&lt;/&quot; + tagName + &quot;&gt;&quot;).attr(&quot;id&quot;, c.id).attr(&quot;nodes-control&quot;, &quot;&quot;).append(c.html);
+                  if (c.tagAttributes != null) {
+                    for (attrib in c.tagAttributes) {
+                      page.$(c.element).attr(attrib, c.tagAttributes[attrib]);
+                    }
+                  }
+                  target = &quot;[nodes-placeholder=&#039;&quot; + c.ref.placeholder + &quot;&#039;]&quot;;
+                  _this.log(&quot;appending control to &quot; + c.ref.placeholder);
+                  page.$(target).append(c.element);
+                }
+              }
+            } else {
+              _this.log(&quot;Magician - onPageRequestFinish - checking if placeholder exists on the page?&quot;);
+              if (page.$(&quot;#&quot; + c.id).length &gt; 0) {
+                _this.log(&quot;Magician - onPageRequestFinish - it Does, setting html&quot;);
+                page.$(&quot;#&quot; + c.id).html(c.html);
+              } else {
+                _this.log(&quot;Magician - onPageRequestFinish - it does not... looking for placeholder&quot;);
+                target = &quot;[nodes-placeholder=&#039;&quot; + c.ref.placeholder + &quot;&#039;]&quot;;
+                page.$(target).append(c.element);
+              }
+            }
+          }
+          page.isLoaded = true;
+          page.isLoading = false;
+          page.html = page.$.html();
+          return resolve();
+        } else {
+          return reject();
+        }
+      });
+    };
+
+    Magician.prototype.processSublayoutTags = function(req, res, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var sltdetail, sublayoutTag, tagCount, tagPromises, tags, _i, _len;
+        _this.log(&quot;Magician - processSublayoutTags - start&quot;);
+        tagCount = page.$(&#039;[nodes-sublayout]&#039;).length;
+        if (tagCount &gt; 0) {
+          tags = page.$(&#039;[nodes-sublayout]&#039;).toArray();
+          _this.log(&quot;Magician - processSublayoutTags - tags&quot;, tags.length);
+          tagPromises = new Promises();
+          for (_i = 0, _len = tags.length; _i &lt; _len; _i++) {
+            sublayoutTag = tags[_i];
+            sltdetail = _this.getTagDetails(sublayoutTag, page);
+            tagPromises.push(_this.sublayoutTagProcessor, _this, [req, res, sltdetail, sltdetail.id, sublayoutTag, page]);
+          }
+          return tagPromises.chain().then(function() {
+            return resolve();
+          }, reject);
+        } else {
+          return resolve();
+        }
+      });
+    };
+
+    Magician.prototype.sublayoutTagProcessor = function(req, res, ref, id, sublayoutTag, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.loadControl(ref.controlname, page.site.sublayoutPath, ref, page).then(function(sublayout) {
+          var event, promises, _i, _len, _ref;
+          sublayout.ref = ref;
+          sublayout.ref.tag = sublayoutTag;
+          sublayout.attr = ref.attributes || {};
+          promises = new Promises();
+          _ref = page.controlEvents;
+          for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+            event = _ref[_i];
+            if (sublayout[event] != null) {
+              promises.push(sublayout[event], sublayout, [req, res, sublayout]);
+            }
+          }
+          return promises.chain().then(function() {
+            page.$(sublayoutTag).append(sublayout.html);
+            return resolve();
+          }, reject);
+        }, reject);
+      });
+    };
+
+    Magician.prototype.getTagDetails = function(sublayoutTag, page) {
+      var attr, attributes, controlname, field_regex, fielddata, fieldname, id, key, replace_regex, result;
+      id = page.$(sublayoutTag).attr(&#039;nodes-id&#039;);
+      controlname = page.$(sublayoutTag).attr(&#039;nodes-sublayout&#039;);
+      attributes = page.$(sublayoutTag).attr();
+      field_regex = /^nodes-sublayout-attr-.*$/;
+      replace_regex = /^nodes-sublayout-attr-/;
+      attr = {};
+      for (key in attributes) {
+        result = key.match(field_regex);
+        if (result != null) {
+          fieldname = key.replace(replace_regex, &quot;&quot;);
+          fielddata = page.$(sublayoutTag).attr(key);
+          attr[fieldname] = fielddata;
+        }
+      }
+      return {
+        id: id,
+        tag: sublayoutTag,
+        controlname: controlname,
+        attributes: attributes
+      };
+    };
+
+    Magician.prototype.loadPageLayout = function(page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        _this.log(&quot;Magician - loadPageLayout - start&quot;, page.pageData);
+        return _this.db.logic.layout.findOne({
+          _id: page.pageData.layout.id
+        }).then(function(layoutData) {
+          if (layoutData != null) {
+            return _this.loadControl(layoutData.name, page.site.layoutPath, layoutData, page).then(function(layout) {
+              page.controls.push(layout);
+              return resolve();
+            }, reject);
+          }
+          _this.log(&quot;Magician - loadPageLayout - reject&quot;);
+          return reject();
+        }, reject);
+      });
+    };
+
+    Magician.prototype.loadPageSublayouts = function(page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var loadSublayoutPromises, sublayoutRef, _i, _len, _ref;
+        loadSublayoutPromises = new Promises();
+        _ref = page.pageData.sublayouts;
+        for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+          sublayoutRef = _ref[_i];
+          loadSublayoutPromises.push(_this.loadSublayout, _this, [sublayoutRef, page]);
+        }
+        return loadSublayoutPromises.chain().then(resolve, reject);
+      });
+    };
+
+    Magician.prototype.loadSublayout = function(sublayoutRef, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.db.logic.sublayout.findOne({
+          _id: sublayoutRef.id
+        }).then(function(sublayoutData) {
+          if (sublayoutData != null) {
+            return _this.loadControl(sublayoutData.name, page.site.sublayoutPath, sublayoutData, page).then(function(sublayout) {
+              sublayout.ref = sublayoutRef;
+              sublayout.attr = sublayoutRef.attributes || {};
+              page.controls.push(sublayout);
+              return resolve();
+            }, reject);
+          }
+        }, reject);
+      });
+    };
+
+    Magician.prototype.loadControls = function(page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.loadPageLayout(page).then(function() {
+          return _this.loadPageSublayouts(page).then(function() {
+            return resolve();
+          }, reject);
+        }, reject);
+      });
+    };
+
+    Magician.prototype.loadControl = function(name, baseDir, controlData, page) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var dir, path;
+        path = baseDir + name;
+        dir = paths.dirname(path);
+        return _this.core.cache.getControlAsync(path).then(function(control) {
+          var context;
+          context = new control({
+            core: _this.core,
+            site: page.site,
+            page: page,
+            controlData: controlData,
+            filePath: path,
+            workingDir: dir
+          });
+          context.id = uuid.v4();
+          return resolve(context);
+        }, reject);
+      })[&quot;catch&quot;](function(err) {
+        return _this.log(&quot;Page - loadControl - error&quot;, err, err.stack);
+      });
+    };
+
+    return Magician;
+
+  })(Module);
+
+  module.exports = Magician;
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

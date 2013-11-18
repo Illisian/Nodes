@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>illisian/datasetup.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">64.30</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">264</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">25.69</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">2.89</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var DataSetup, Promise, util,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  util = require(&quot;../lib/func&quot;);
+
+  Promise = require(&quot;bluebird&quot;);
+
+  DataSetup = (function() {
+    function DataSetup(main) {
+      var _ref;
+      this.main = main;
+      this.adminSetup = __bind(this.adminSetup, this);
+      this.init = __bind(this.init, this);
+      _ref = this.main, this.db = _ref.db, this.log = _ref.log;
+    }
+
+    DataSetup.prototype.init = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var content, home, main, nav, panel, projects, projects_nodes, service, site;
+        util.log(&quot;Creating Illisians Site&quot;);
+        _this.log(&quot;DataSetup - init - Start&quot;);
+        main = new _this.db.model.layout;
+        main.name = &quot;main&quot;;
+        nav = new _this.db.model.sublayout;
+        nav.name = &quot;controls/nav&quot;;
+        content = new _this.db.model.sublayout;
+        content.name = &quot;content&quot;;
+        panel = new _this.db.model.sublayout;
+        panel.name = &quot;controls/panel&quot;;
+        home = new _this.db.model.page;
+        home.index = 0;
+        home.name = &quot;Home&quot;;
+        home.fields = {
+          panel1_header: &quot;Services&quot;,
+          panel1_content: &quot;&lt;ul class=&#039;list-group&#039;&gt; &lt;li class=&#039;list-group-item&#039;&gt; Web Application Hosting &lt;/li&gt; &lt;li class=&#039;list-group-item&#039;&gt; Application Development &lt;/li&gt; &lt;li class=&#039;list-group-item&#039;&gt; Consultation &lt;/li&gt;&lt;ul&gt;&quot;,
+          panel2_header: &quot;Projects&quot;,
+          panel2_content: &quot;&lt;ul class=&#039;list-group&#039;&gt;           &lt;li class=&#039;list-group-item&#039;&gt;             &lt;a href=&#039;https://github.com/Illisian/Nodes&#039;&gt;Nodes - CMS built in Node.Js&lt;/a&gt;             &lt;span style=&#039;float: right&#039;&gt;              &lt;iframe src=&#039;http://ghbtns.com/github-btn.html?user=Illisian&amp;repo=Nodes&amp;type=watch&#039; allowtransparency=&#039;true&#039; frameborder=&#039;0&#039; scrolling=&#039;0&#039; width=&#039;62&#039; height=&#039;20&#039;&gt;&lt;/iframe&gt;            &lt;/span&gt;          &lt;/li&gt;           &lt;ul&gt;&quot;,
+          panel3_header: &quot;Contact Us&quot;,
+          panel3_content: &quot;&lt;ul class=&#039;list-group&#039;&gt;          &lt;li class=&#039;list-group-item&#039;&gt;            &lt;button class=&#039;btn btn-primary&#039; type=&#039;button&#039; data-toggle=&#039;modal&#039; data-target=&#039;#onlineRequest&#039;&gt;Online Request&lt;/button&gt;          &lt;/li&gt;           &lt;li class=&#039;list-group-item&#039;&gt;             Email: &lt;a href=&#039;mailto:contactus@illisian.com.au&#039;&gt;contactus@illisian.com.au&lt;/a&gt;           &lt;/li&gt;          &lt;li class=&#039;list-group-item&#039;&gt;            Mobile: +61 04 2620 6650          &lt;/li&gt;          &lt;ul&gt;&quot;
+        };
+        home.path = &quot;/&quot;;
+        home.isRoot = true;
+        home.hasChildren = true;
+        service = new _this.db.model.page;
+        service.name = &quot;Services&quot;;
+        service.index = 1;
+        service.fields = {};
+        service.path = &quot;/services/&quot;;
+        service.isRoot = false;
+        service.hasChildren = false;
+        projects = new _this.db.model.page;
+        projects.name = &quot;Projects&quot;;
+        projects.index = 0;
+        projects.fields = {};
+        projects.path = &quot;/projects/&quot;;
+        projects.isRoot = false;
+        projects.hasChildren = true;
+        projects_nodes = new _this.db.model.page;
+        projects_nodes.name = &quot;Nodes&quot;;
+        projects_nodes.fields = {};
+        projects_nodes.path = &quot;https://github.com/Illisian/Nodes&quot;;
+        projects_nodes.isRoot = false;
+        projects_nodes.hasChildren = false;
+        site = new _this.db.model.site;
+        site.name = &quot;Illisian&quot;;
+        site.hosts = [&quot;127.0.0.1&quot;, &quot;local.illisian.com.au&quot;, &quot;clive.illisian.com.au&quot;];
+        site.fields = {
+          sitename: &quot;Illisian&quot;
+        };
+        site.paths = {
+          base: &quot;/illisian/&quot;,
+          sublayout: &quot;sublayouts/&quot;,
+          layout: &quot;layouts/&quot;,
+          module: &quot;modules/&quot;,
+          content: [&quot;public/&quot;, &quot;../admin/public/&quot;]
+        };
+        site.modules = [];
+        _this.log(&quot;DataSetup - init - committing variables&quot;);
+        return _this.db.save(main).then(function() {
+          home.layout = {
+            id: main._id
+          };
+          service.layout = {
+            id: main._id
+          };
+          projects.layout = {
+            id: main._id
+          };
+          projects_nodes.layout = {
+            id: main._id
+          };
+          return _this.db.save(panel).then(function() {
+            return _this.db.save(content).then(function() {
+              return _this.db.save(nav).then(function() {
+                var panel1_attr, panel2_attr, panel3_attr;
+                panel1_attr = {
+                  header: &quot;panel1_header&quot;,
+                  content: &quot;panel1_content&quot;
+                };
+                panel2_attr = {
+                  header: &quot;panel2_header&quot;,
+                  content: &quot;panel2_content&quot;
+                };
+                panel3_attr = {
+                  header: &quot;panel3_header&quot;,
+                  content: &quot;panel3_content&quot;
+                };
+                home.sublayouts = [
+                  {
+                    placeholder: &quot;nav&quot;,
+                    id: nav._id,
+                    index: 0,
+                    attributes: {}
+                  }, {
+                    placeholder: &quot;content&quot;,
+                    id: content._id,
+                    index: 1,
+                    attributes: {}
+                  }, {
+                    placeholder: &quot;panels&quot;,
+                    id: panel._id,
+                    index: 2,
+                    attributes: panel1_attr
+                  }, {
+                    placeholder: &quot;panels&quot;,
+                    id: panel._id,
+                    index: 3,
+                    attributes: panel2_attr
+                  }, {
+                    placeholder: &quot;panels&quot;,
+                    id: panel._id,
+                    index: 4,
+                    attributes: panel3_attr
+                  }
+                ];
+                service.sublayouts = [
+                  {
+                    placeholder: &quot;nav&quot;,
+                    id: nav._id,
+                    index: 0,
+                    attributes: {}
+                  }
+                ];
+                projects.sublayouts = [
+                  {
+                    placeholder: &quot;nav&quot;,
+                    id: nav._id,
+                    index: 0,
+                    attributes: {}
+                  }
+                ];
+                return _this.db.save(home).then(function() {
+                  site.root = home._id;
+                  return _this.db.save(site).then(function() {
+                    home.site = site._id;
+                    return _this.db.save(home).then(function() {
+                      service.parent = home._id;
+                      service.site = site._id;
+                      projects.parent = home._id;
+                      projects.site = site._id;
+                      return _this.db.save(service).then(function() {
+                        return _this.db.save(projects).then(function() {
+                          projects_nodes.parent = projects._id;
+                          return _this.db.save(projects_nodes).then(function() {
+                            _this.log(&quot;DataSetup - init - starting admin setup&quot;);
+                            return _this.adminSetup(home, site).then(function() {
+                              _this.log(&quot;DataSetup - init - finished&quot;);
+                              return resolve();
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        })[&quot;catch&quot;](function(err) {
+          return _this.log(err);
+        });
+      });
+    };
+
+    DataSetup.prototype.adminSetup = function(home, site) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var admin, adminHome, adminMenu, adminPageEditor, pageeditor;
+        _this.log(&quot;DataSetup - adminSetup - start&quot;);
+        admin = new _this.db.model.layout;
+        admin.name = &quot;../../admin/layouts/admin&quot;;
+        adminMenu = new _this.db.model.sublayout;
+        adminMenu.name = &quot;../../admin/sublayouts/menu&quot;;
+        pageeditor = new _this.db.model.sublayout;
+        pageeditor.name = &quot;../../admin/sublayouts/pageeditor&quot;;
+        adminHome = new _this.db.model.page;
+        adminHome.name = &quot;Admin&quot;;
+        adminHome.index = 2;
+        adminHome.fields = {};
+        adminHome.path = &quot;/admin/&quot;;
+        adminHome.isRoot = false;
+        adminHome.hasChildren = true;
+        adminHome.site = site._id;
+        adminHome.parent = home._id;
+        adminPageEditor = new _this.db.model.page;
+        adminPageEditor.name = &quot;Page Editor&quot;;
+        adminPageEditor.index = 2;
+        adminPageEditor.fields = {};
+        adminPageEditor.path = &quot;/admin/pageeditor&quot;;
+        adminPageEditor.isRoot = false;
+        adminPageEditor.hasChildren = false;
+        adminPageEditor.site = site._id;
+        adminPageEditor.parent = adminHome._id;
+        return _this.db.save(admin).then(function() {
+          return _this.db.save(adminMenu).then(function() {
+            adminHome.layout = {
+              id: admin._id
+            };
+            adminHome.sublayouts = [
+              {
+                placeholder: &quot;menu&quot;,
+                id: adminMenu._id,
+                index: 0,
+                attributes: {}
+              }
+            ];
+            return _this.db.save(adminHome).then(function() {
+              return _this.db.save(pageeditor).then(function() {
+                adminPageEditor.layout = {
+                  id: admin._id
+                };
+                adminPageEditor.sublayouts = [
+                  {
+                    placeholder: &quot;menu&quot;,
+                    id: adminMenu._id,
+                    index: 0,
+                    attributes: {}
+                  }, {
+                    placeholder: &quot;content&quot;,
+                    id: pageeditor._id,
+                    index: 0,
+                    attributes: {}
+                  }
+                ];
+                return _this.db.save(adminPageEditor).then(function() {
+                  _this.log(&quot;DataSetup - adminSetup - finished&quot;);
+                  return resolve();
+                });
+              });
+            });
+          });
+        });
+      });
+    };
+
+    return DataSetup;
+
+  })();
+
+  module.exports = DataSetup;
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

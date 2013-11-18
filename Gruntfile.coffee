@@ -9,7 +9,7 @@ module.exports = (grunt) ->
         expand: true
     clean:
       build:
-        [ 'build', 'report' ]
+        [ 'build' ]
     coffee:
       lib:
         files:[
@@ -21,28 +21,27 @@ module.exports = (grunt) ->
         ]
     watch:
       files: [
-        'Gruntfile.coffee',
+        'Gruntfile.coffee'
         'src/**/*'
+        'package.json'
       ]
       tasks: ['default']
     plato:
       default:
         options: 
           exclude: new RegExp("^.*public/*.*.js$", "i")
-
         files:
-          'report/': ['src/**/*.js']
-        
-        
+          'report/': ['build/**/*.js']
 
   grunt.loadNpmTasks 'grunt-contrib-copy';
   grunt.loadNpmTasks 'grunt-contrib-clean';
   grunt.loadNpmTasks 'grunt-contrib-coffee';
   grunt.loadNpmTasks 'grunt-contrib-watch';
   grunt.loadNpmTasks 'grunt-plato';
+  grunt.loadNpmTasks 'grunt-install-dependencies';
   
   
-  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'clean', 'copy', 'coffee', 'plato' ]
+  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato' ]
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
  
   

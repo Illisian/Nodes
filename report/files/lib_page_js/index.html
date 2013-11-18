@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome-ie7.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/jsoverson/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>lib/page.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
+      <p class="stat">69.96</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
+      <p class="stat">100</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
+      <p class="stat">32.29</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
+      <p class="stat">1.14</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">(function() {
+  var Page, Promise, Promises, cacheStore, events, extend, paths, util,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  Promise = require(&#039;bluebird&#039;);
+
+  Promises = require(&#039;./Promises&#039;);
+
+  events = require(&#039;./events&#039;);
+
+  paths = require(&#039;path&#039;);
+
+  extend = require(&#039;extend&#039;);
+
+  cacheStore = require(&#039;./cacheStore&#039;);
+
+  util = require(&#039;util&#039;);
+
+  Page = (function() {
+    function Page(core, site, pageData) {
+      var _ref;
+      this.core = core;
+      this.site = site;
+      this.pageData = pageData;
+      this.process = __bind(this.process, this);
+      this.createFields = __bind(this.createFields, this);
+      this.fireEvent = __bind(this.fireEvent, this);
+      _ref = this.core, this.db = _ref.db, this.log = _ref.log, this.debug = _ref.debug;
+      this.fields = {};
+      this.cache = new cacheStore();
+      this.controls = [];
+      this.html = &quot;&quot;;
+      this.controlEvents = [&quot;onControlLoad&quot;, &quot;onControlBeforeRender&quot;, &quot;onControlDataBind&quot;, &quot;onControlTemplateRender&quot;, &quot;onControlRender&quot;, &quot;onControlAfterRender&quot;];
+    }
+
+    Page.prototype.fireEvent = function(name, req, res) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        var control, promises, _i, _len, _ref;
+        promises = new Promises();
+        _ref = _this.controls;
+        for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+          control = _ref[_i];
+          if (_this.site.events.length(name) &gt; 0) {
+            promises.push(_this.site.events.chain, _this.site.events, [name, req, res, control]);
+          }
+          if (control[name] != null) {
+            promises.push(control[name], control, [req, res, control]);
+          }
+        }
+        return promises.chain().then(function() {
+          return resolve();
+        });
+      });
+    };
+
+    Page.prototype.createFields = function() {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        if (_this.pageData.fields != null) {
+          _this.fields = extend(true, _this.fields, _this.pageData.fields);
+        }
+        if (_this.site.siteData.fields != null) {
+          _this.fields = extend(true, _this.fields, _this.site.siteData.fields);
+        }
+        return resolve();
+      });
+    };
+
+    Page.prototype.process = function(req, res) {
+      var _this = this;
+      return new Promise(function(resolve, reject) {
+        return _this.createFields().then(function() {
+          _this.debug(&quot;Page - process - onPageRequestStart - start&quot;);
+          return _this.site.events.chain(&quot;onPageRequestStart&quot;, req, res, _this).then(function() {
+            var event, promises, _i, _len, _ref;
+            _this.debug(&quot;Page - process - onPageRequestStart - finish&quot;);
+            promises = new Promises();
+            _ref = _this.controlEvents;
+            for (_i = 0, _len = _ref.length; _i &lt; _len; _i++) {
+              event = _ref[_i];
+              promises.push(_this.fireEvent, _this, [event, req, res]);
+            }
+            return promises.chain(req, res).then(function() {
+              return _this.site.events.chain(&quot;onPageRequestFinish&quot;, req, res, _this).then(function() {
+                return resolve(_this.html);
+              }, reject);
+            }, reject);
+          }, reject);
+        }, reject);
+      });
+    };
+
+    return Page;
+
+  })();
+
+  module.exports = Page;
+
+}).call(this);</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ complexity.cyclomatic }} <br>
+    Length : {{ complexity.halstead.length }} <br>
+    Difficulty : {{ complexity.halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ complexity.halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>
