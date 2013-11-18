@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "forever --watch build/app.js",
-    "travis": "grunt default --verbose"
+    "test": "grunt default --verbose"
   },
   "dependencies": {
     "express": "3.4.0",
@@ -45,9 +45,10 @@
   "description": "its a CMS yey",
   "keywords": [
     "nodejs",
-    "coffeescript",
-    "content management system",
-    "javascript"
+    " coffeescript",
+    " content management system",
+    " javascript",
+    " modular"
   ],
   "author": "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)",
   "maintainers": [
