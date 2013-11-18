@@ -1,9 +1,10 @@
 {
   "name": "nodes",
   "version": "0.0.1",
+  "engine": "node >= 0.10",
   "private": true,
   "scripts": {
-    "start": "coffee app.coffee"
+    "start": "node build/app.js"
   },
   "dependencies": {
     "express": "3.4.0",
@@ -27,6 +28,13 @@
     "socket.io": "*",
     "session.socket.io": "*",
     "connect": "*",
-    "node-uuid": "*"
+    "node-uuid": "*",
+    "nodetime": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-coffee": "*"
   }
 }

@@ -41,7 +41,7 @@ requirejs [
     
     nAdmin.editors = {}
     $("[nodes-placeholder]").each (index, el) =>
-      nAdmin.editors[$(el).attr("nodes-placeholder")] = new SirTrevor.Editor({ el: el });
+      nAdmin.editors[$(el).attr("nodes-placeholder")] = new SirTrevor.Editor({ el: $(el), blockTypes: ["Text", "Tweet", "Image"] });
       # now we need to hook up websockets and pull the sublayout information down for the page, and populate the trevor controls
       
       

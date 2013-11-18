@@ -11,7 +11,7 @@ cacheStore = require "../lib/cacheStore";
 exists = Promise.promisify(require("fs").exists);
 
 class Compiler extends Module
-
+  donotcache: true
   onSiteLoad: (req, res, site) =>
     return new Promise (resolve, reject) =>
       site.controls = new cacheStore();
@@ -33,6 +33,18 @@ class Compiler extends Module
         return resolve();
   loadFile: (req, res, file) =>
     return new Promise (resolve, reject) =>
+      
+      
+      
+      return site.controls.getFile(file, true).then (file) =>
+        #success
+        @log "Success"
+      , () =>
+        @log "Reject"
+        #reject
+      
+      
+      
       return fs.exists file, (result) =>
         if not result
           return resolve();
