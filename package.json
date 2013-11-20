@@ -1,5 +1,5 @@
 {
-  "name": "nodes",
+  "name": "Nodes",
   "version": "0.1.1",
   "engine": "node >= 0.10",
   "private": true,
@@ -40,6 +40,9 @@
     "grunt-contrib-watch": "*",
     "grunt-plato": "*",
     "grunt-install-dependencies": "*",
+    "grunt-concurrent": "*",
+    "grunt-nodemon": "*",
+    "grunt-node-inspector": "*",
     "nodetime": "*"
   },
   "description": "its a CMS yey",

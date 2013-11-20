@@ -18,7 +18,7 @@ class Nav extends Control
       return @db.logic.site.getRootPage(@site.siteData).then (pageData) =>
         @log "onControlDataBind getRootPage page response"
         if pageData?
-          @log "onControlDataBind getChildren children", pageData
+          @log "onControlDataBind getChildren children"
           return @db.logic.page.getChildren(pageData).then (childrenData) =>
             @log "onControlDataBind getChildren children response"
             pages = [].concat(childrenData);
@@ -33,7 +33,11 @@ class Nav extends Control
               @log "Nav Fields Set!";
               return resolve();
             , reject
-          , reject
+          , (err) =>
+            @log "REJECTED no children", err
+            #resolve();
+            
+            
         else
           @log "Nav onControlDataBind page not found";
           return resolve();

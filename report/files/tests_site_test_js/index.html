@@ -37,7 +37,7 @@
 
 <div class="jumbotron">
   <div class="container">
-    <h1>illisian/sublayouts/controls/nav.js</h1>
+    <h1>tests/site-test.js</h1>
   </div>
 </div>
 
@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">70.15</p>
+      <p class="stat">100.00</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">99</p>
+      <p class="stat">4</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">33.14</p>
+      <p class="stat">1.50</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">1.24</p>
+      <p class="stat">0.01</p>
     </div>
   </div>
 </div>
@@ -91,102 +91,7 @@
 <div class="container">
   <div class="row">
     <textarea id="file-source" class="col-md-12">(function() {
-  var Control, Nav, Promise, Promises, util, _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  util = require(&quot;util&quot;);
-
-  Promise = require(&quot;bluebird&quot;);
-
-  Promises = require(&quot;../../../lib/Promises&quot;);
-
-  Control = require(&quot;../../../lib/templateControl&quot;);
-
-  Nav = (function(_super) {
-    __extends(Nav, _super);
-
-    function Nav() {
-      this.processChildren = __bind(this.processChildren, this);
-      this.onControlDataBind = __bind(this.onControlDataBind, this);
-      _ref = Nav.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    Nav.prototype.view = {
-      file: &#039;nav.ejs&#039;,
-      renderer: &#039;ejs&#039;
-    };
-
-    Nav.prototype.onControlDataBind = function(req, res) {
-      var _this = this;
-      return new Promise(function(resolve, reject) {
-        _this.security = _this.security || {};
-        if (req.isAuthenticated()) {
-          _this.security.name = req.session.passport.user.displayName;
-          if (req.session.passport.user.photos != null) {
-            _this.security.photo = req.session.passport.user.photos[0];
-          }
-        }
-        _this.log(&quot;onControlDataBind getRootPage&quot;);
-        return _this.db.logic.site.getRootPage(_this.site.siteData).then(function(pageData) {
-          _this.log(&quot;onControlDataBind getRootPage page response&quot;);
-          if (pageData != null) {
-            _this.log(&quot;onControlDataBind getChildren children&quot;);
-            return _this.db.logic.page.getChildren(pageData).then(function(childrenData) {
-              var pages, parentPage, promises, _i, _len;
-              _this.log(&quot;onControlDataBind getChildren children response&quot;);
-              pages = [].concat(childrenData);
-              promises = new Promises();
-              for (_i = 0, _len = pages.length; _i &lt; _len; _i++) {
-                parentPage = pages[_i];
-                promises.push(_this.processChildren, _this, [parentPage]);
-              }
-              _this.log(&quot;onControlDataBind getChildren childrens&quot;);
-              return promises.chain().then(function(results) {
-                var r, _j, _len1;
-                _this.pages = [pageData];
-                for (_j = 0, _len1 = results.length; _j &lt; _len1; _j++) {
-                  r = results[_j];
-                  _this.pages.push(r[0]);
-                }
-                _this.log(&quot;Nav Fields Set!&quot;);
-                return resolve();
-              }, reject);
-            }, function(err) {
-              return _this.log(&quot;REJECTED no children&quot;, err);
-            });
-          } else {
-            _this.log(&quot;Nav onControlDataBind page not found&quot;);
-            return resolve();
-          }
-        })[&quot;catch&quot;](function(err) {
-          return _this.log(err, err.stack);
-        });
-      });
-    };
-
-    Nav.prototype.processChildren = function(pageData) {
-      var _this = this;
-      return new Promise(function(resolve, reject) {
-        return _this.db.logic.page.getChildren(pageData).then(function(children) {
-          _this.log(&quot;processChildren&quot;);
-          pageData.children = children;
-          pageData.showDropdown = false;
-          if (pageData.children.length &gt; 0 &amp;&amp; !pageData.isRoot) {
-            pageData.showDropdown = true;
-          }
-          return resolve(pageData);
-        }, reject);
-      });
-    };
-
-    return Nav;
-
-  })(Control);
-
-  module.exports = Nav;
 
 }).call(this);</textarea>
   </div>

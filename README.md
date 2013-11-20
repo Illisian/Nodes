@@ -26,7 +26,7 @@ etc
 <!-- HISTORY/ -->
 
 ## History
-[Discover the change history by heading on over to the `History.md` file.](https://github.com/Illisian/nodes/blob/master/History.md#files)
+[Discover the change history by heading on over to the `History.md` file.](https://github.com/Illisian/Nodes/blob/master/History.md#files)
 
 <!-- /HISTORY -->
 
@@ -35,7 +35,7 @@ etc
 
 ## Contribute
 
-[Discover how you can contribute by heading on over to the `Contributing.md` file.](https://github.com/Illisian/nodes/blob/master/Contributing.md#files)
+[Discover how you can contribute by heading on over to the `Contributing.md` file.](https://github.com/Illisian/Nodes/blob/master/Contributing.md#files)
 
 <!-- /CONTRIBUTE -->
 
@@ -66,7 +66,7 @@ These amazing people have contributed code to this project:
 
 - Azerothian (https://github.com/Azerothian) - [view contributions](https://github.com/Illisian/Nodes/commits?author=Azerothian)
 
-[Become a contributor!](https://github.com/Illisian/nodes/blob/master/Contributing.md#files)
+[Become a contributor!](https://github.com/Illisian/Nodes/blob/master/Contributing.md#files)
 
 <!-- /BACKERS -->
 
