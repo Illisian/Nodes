@@ -18,11 +18,11 @@
     demo: "https://github.com/Illisian/Nodes"
 
     # Project description
-    description: "its a CMS yey"
+    description: "The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality."
 
     # Project keywords
     # Can be an array or CSV string
-    keywords: "nodejs,coffeescript,content management system,javascript"
+    keywords: "nodejs,coffeescript,content management system,javascript,bluebird,promise,sublayout,layout,cheerio,controls,modules,cms"
 
     # Project's author details
     # Can be an array or CSV string

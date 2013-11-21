@@ -44,7 +44,7 @@ class Pages extends ModelLogic
   modelName: "page";
   schema: schemas.Page
   getChildren: (page) =>
-    return @find { parent: page._id }, { index: 'desc' }
+    return @find { parent: page._id }, { index: -1 }
 
 class Sites extends ModelLogic
   modelName: "site";

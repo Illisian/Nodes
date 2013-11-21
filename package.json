@@ -41,7 +41,7 @@
     "grunt-plato": "*",
     "grunt-install-dependencies": "*",
     "grunt-concurrent": "*",
-    "grunt-nodemon": "*",
+    "grunt-forever-multi": "*",
     "grunt-node-inspector": "*",
     "nodetime": "*"
   },

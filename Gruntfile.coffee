@@ -25,23 +25,27 @@ module.exports = (grunt) ->
         'src/**/*'
         'package.json'
       ]
-      tasks: ['build']
+      tasks: ['default']
     plato:
       default:
         options: 
           exclude: new RegExp("^.*public/*.*.js$", "i")
         files:
           'report/': ['build/**/*.js']
-    nodemon:
+#    nodemon:
+#      dev:
+#        options:
+#          args: ['dev']
+#          file: 'build/app.js'
+#          #nodeArgs: ['--debug']
+#          watchedExtensions: ['js'],
+#          watchedFolders: ['build']
+#        #env: 
+#        #  PORT: '8282'
+    foreverMulti: {
       dev:
-        options:
-          args: ['dev']
-          file: 'build/app.js'
-          nodeArgs: ['--debug']
-          watchedExtensions: ['js'],
-          watchedFolders: ['build']
-        #env: 
-        #  PORT: '8282'
+        action: 'restart',
+        file: 'build/app.js'
     'node-inspector':
       dev:
         options:
@@ -51,10 +55,15 @@ module.exports = (grunt) ->
           'save-live-edit': true,
           'stack-trace-limit': 4
     concurrent:
-      devtasks:
+      run:
+        tasks: ['nodemon', 'watch']
+        options:
+          logConcurrentOutput: true
+      debug:
         tasks: ['nodemon', 'watch', 'node-inspector']
         options:
           logConcurrentOutput: true
+      
 
   grunt.loadNpmTasks 'grunt-contrib-copy';
   grunt.loadNpmTasks 'grunt-contrib-clean';
@@ -63,13 +72,15 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-plato';
   grunt.loadNpmTasks 'grunt-install-dependencies';
   grunt.loadNpmTasks 'grunt-concurrent'
-  grunt.loadNpmTasks 'grunt-nodemon';
+  grunt.loadNpmTasks 'grunt-forever-multi';
   grunt.loadNpmTasks 'grunt-node-inspector';
   
   
   grunt.registerTask 'test', 'Runs build and test', [ 'install-dependencies', 'clean', 'copy', 'coffee' ]
-  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato', 'concurrent:devtasks' ]
-  grunt.registerTask 'build', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato' ]
+  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato' ]
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
+  grunt.registerTask 'run', 'Clears all files from the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato', 'concurrent:run' ]
+  grunt.registerTask 'debug', 'Clears all files from the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato', 'concurrent:debug' ]
+  
  
   

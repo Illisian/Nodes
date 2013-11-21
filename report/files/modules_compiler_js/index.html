@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">72.27</p>
+      <p class="stat">71.76</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">135</p>
+      <p class="stat">58</p>
     </div>
   </div>
   <div class="row historical">
@@ -63,11 +63,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty"></i></a></h2>
-      <p class="stat">36.30</p>
+      <p class="stat">14.43</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs"></i></a></h2>
-      <p class="stat">1.45</p>
+      <p class="stat">0.52</p>
     </div>
   </div>
 </div>
@@ -118,8 +118,6 @@
     __extends(Compiler, _super);
 
     function Compiler() {
-      this.compileFile = __bind(this.compileFile, this);
-      this.loadFile = __bind(this.loadFile, this);
       this.onSiteRequestStart = __bind(this.onSiteRequestStart, this);
       this.onSiteLoad = __bind(this.onSiteLoad, this);
       _ref = Compiler.__super__.constructor.apply(this, arguments);
@@ -139,82 +137,7 @@
     Compiler.prototype.onSiteRequestStart = function(req, res, site) {
       var _this = this;
       return new Promise(function(resolve, reject) {
-        var filePath, loadFiles, path, _i, _len, _ref1;
-        path = req._parsedUrl.pathname;
-        if (path.match(&#039;.coffee$&#039;)) {
-          loadFiles = new Promises;
-          _ref1 = _this.site.staticPath;
-          for (_i = 0, _len = _ref1.length; _i &lt; _len; _i++) {
-            path = _ref1[_i];
-            _this.log(&quot;Adding promises for path &quot; + path);
-            filePath = paths.join(path, req._parsedUrl.pathname);
-            loadFiles.push(_this.loadFile, _this, [req, res, site, filePath]);
-          }
-          return loadFiles.chain().then(function() {
-            return resolve();
-          });
-        } else {
-          return resolve();
-        }
-      });
-    };
-
-    Compiler.prototype.loadFile = function(req, res, filePath) {
-      var _this = this;
-      return new Promise(function(resolve, reject) {
-        if (_this.donotcache) {
-          return site.mod_compiler.getFile(filePath, _this.donotcache).then(function(fileData) {
-            return _this.log(&quot;Success&quot;);
-          }, function() {
-            return _this.log(&quot;Reject&quot;);
-          });
-        } else {
-
-        }
-      });
-    };
-
-    Compiler.prototype.compileFile = function(filePath, fileData) {
-      var _this = this;
-      return new Promise(function(resolve, reject) {
-        if (_this.donotcache) {
-
-        } else {
-          return _this.site.mod_compiler.get(&quot;compiled&quot;, file).then(function(compiledFile) {
-            _this.log(&quot;Illisian - Compiler Module - sent cached copy&quot;, file);
-            return res.send(compiledFile);
-          }, function() {
-            return _this.log(&quot;Illisian - Compiler Module - cached copy not found&quot;, file);
-          });
-        }
-        return fs.exists(file, function(result) {
-          if (!result) {
-            return resolve();
-          }
-          _this.log(&quot;Illisian - Compiler Module - found coffee file&quot;, file);
-          return _this.site.mod_compiler.get(&quot;compiled&quot;, file).then(function(compiledFile) {
-            _this.log(&quot;Illisian - Compiler Module - sent cached copy&quot;, file);
-            return res.send(compiledFile);
-          }, function() {
-            _this.log(&quot;Illisian - Compiler Module - cached copy not found&quot;, file);
-            return _this.site.mod_compiler.getFile(file).then(function(fileData) {
-              var compiledFile, err;
-              _this.log(&quot;Illisian - Compiler Module - file cached - compile with coffee&quot;, file);
-              try {
-                compiledFile = coffee.compile(fileData, {
-                  filename: file
-                });
-              } catch (_error) {
-                err = _error;
-                _this.log(&quot;Compiler&quot;, err);
-              }
-              _this.log(&quot;Illisian - Compiler Module - file compiled&quot;, file);
-              return _this.site.mod_compiler.put(&quot;compiled&quot;, file, compiledFile).then(function() {
-                return res.send(compiledFile);
-              });
-            });
-          });
-        });
+        return resolve();
       });
     };
 
