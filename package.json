@@ -43,14 +43,23 @@
     "grunt-concurrent": "*",
     "grunt-forever-multi": "*",
     "grunt-node-inspector": "*",
+    "grunt-contrib-yuidoc": "*",
     "nodetime": "*"
   },
-  "description": "its a CMS yey",
+  "description": "The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality.",
   "keywords": [
     "nodejs",
     "coffeescript",
     "content management system",
-    "javascript"
+    "javascript",
+    "bluebird",
+    "promise",
+    "sublayout",
+    "layout",
+    "cheerio",
+    "controls",
+    "modules",
+    "cms"
   ],
   "author": "Matthew Mckenzie (matthew.mckenze@illisian.com.au) (http://www.illisian.com.au)",
   "maintainers": [

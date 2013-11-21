@@ -9,7 +9,7 @@
 
 <!-- DESCRIPTION/ -->
 
-its a CMS yey
+The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality.
 
 <!-- /DESCRIPTION -->
 

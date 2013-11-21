@@ -1,0 +1,120 @@
+{
+    "project": {
+        "name": "Nodes",
+        "description": "The purpose of nodes is to provide a dynamic and easy to use content management system, using a module/control (layout and sublayouts) base system to dynamically assemble webpages and provides drag n drop type functionality.",
+        "version": "0.1.1",
+        "url": ""
+    },
+    "files": {
+        "build/admin/public/admin/js/require.text.js": {
+            "name": "build/admin/public/admin/js/require.text.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "build/illisian/public/style/dist/js/bootstrap.js": {
+            "name": "build/illisian/public/style/dist/js/bootstrap.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        },
+        "build/illisian/public/style/dist/js/bootstrap.min.js": {
+            "name": "build/illisian/public/style/dist/js/bootstrap.min.js",
+            "modules": {},
+            "classes": {},
+            "fors": {},
+            "namespaces": {}
+        }
+    },
+    "modules": {},
+    "classes": {},
+    "classitems": [
+        {
+            "file": "build/admin/public/admin/js/require.text.js",
+            "line": 1,
+            "license": "RequireJS text 2.0.10 Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.\nAvailable via the MIT or new BSD license.\nsee: http://github.com/requirejs/text for details",
+            "class": ""
+        },
+        {
+            "file": "build/admin/public/admin/js/require.text.js",
+            "line": 77,
+            "description": "Parses a resource name into its component parts. Resource names\nlook like: module/name.ext!strip, where the !strip part is\noptional.",
+            "params": [
+                {
+                    "name": "name",
+                    "description": "the resource name",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "with properties \"moduleName\", \"ext\" and \"strip\"\nwhere strip is a boolean.",
+                "type": "Object"
+            },
+            "class": ""
+        },
+        {
+            "file": "build/admin/public/admin/js/require.text.js",
+            "line": 121,
+            "description": "Is an URL on another domain. Only works for browser use, returns\nfalse in non-browser environments. Only used to know if an\noptimized .js version of a text resource should be loaded\ninstead.",
+            "params": [
+                {
+                    "name": "url",
+                    "description": "",
+                    "type": "String"
+                }
+            ],
+            "return": {
+                "description": "Boolean"
+            },
+            "class": ""
+        },
+        {
+            "file": "build/illisian/public/style/dist/js/bootstrap.js",
+            "line": 1,
+            "description": "bootstrap.js v3.0.0 by @fat and @mdo\nCopyright 2013 Twitter Inc.\nhttp://www.apache.org/licenses/LICENSE-2.0",
+            "class": ""
+        },
+        {
+            "file": "build/illisian/public/style/dist/js/bootstrap.min.js",
+            "line": 1,
+            "description": "bootstrap.js v3.0.0 by @fat and @mdo\nCopyright 2013 Twitter Inc.\nhttp://www.apache.org/licenses/LICENSE-2.0",
+            "class": ""
+        }
+    ],
+    "warnings": [
+        {
+            "message": "unknown tag: license",
+            "line": " build/admin/public/admin/js/require.text.js:1"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " build/admin/public/admin/js/require.text.js:77"
+        },
+        {
+            "message": "replacing incorrect tag: returns with return",
+            "line": " build/admin/public/admin/js/require.text.js:121"
+        },
+        {
+            "message": "Missing item type",
+            "line": " build/admin/public/admin/js/require.text.js:1"
+        },
+        {
+            "message": "Missing item type\nParses a resource name into its component parts. Resource names\nlook like: module/name.ext!strip, where the !strip part is\noptional.",
+            "line": " build/admin/public/admin/js/require.text.js:77"
+        },
+        {
+            "message": "Missing item type\nIs an URL on another domain. Only works for browser use, returns\nfalse in non-browser environments. Only used to know if an\noptimized .js version of a text resource should be loaded\ninstead.",
+            "line": " build/admin/public/admin/js/require.text.js:121"
+        },
+        {
+            "message": "Missing item type\nbootstrap.js v3.0.0 by @fat and @mdo\nCopyright 2013 Twitter Inc.\nhttp://www.apache.org/licenses/LICENSE-2.0",
+            "line": " build/illisian/public/style/dist/js/bootstrap.js:1"
+        },
+        {
+            "message": "Missing item type\nbootstrap.js v3.0.0 by @fat and @mdo\nCopyright 2013 Twitter Inc.\nhttp://www.apache.org/licenses/LICENSE-2.0",
+            "line": " build/illisian/public/style/dist/js/bootstrap.min.js:1"
+        }
+    ]
+}
