@@ -45,11 +45,11 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"></i></a></h2>
-      <p class="stat">69.09</p>
+      <p class="stat">69.07</p>
     </div>
     <div class="col-md-6">
       <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC"></i></h2>
-      <p class="stat">240</p>
+      <p class="stat">256</p>
     </div>
   </div>
   <div class="row historical">
@@ -118,9 +118,25 @@
 
   Promise.longStackTraces();
 
+  /**
+  * This is the bootstrap class for the application, and the main handler for express requests
+  *
+  * @class MainApp
+  * @constructor
+  */
+
+
+  /**
+  * This is init method called on startup
+  *
+  * @method init
+  * @return {Void} Returns nothing
+  */
+
+
   MainApp = (function() {
     function MainApp() {
-      this.unixSockFree = __bind(this.unixSockFree, this);
+      this.unixSockUnlink = __bind(this.unixSockUnlink, this);
       this.unixSockUnlink = __bind(this.unixSockUnlink, this);
       this.loadModule = __bind(this.loadModule, this);
       this.loadSite = __bind(this.loadSite, this);
@@ -308,7 +324,7 @@
       });
     };
 
-    MainApp.prototype.unixSockFree = function() {
+    MainApp.prototype.unixSockUnlink = function() {
       var _this = this;
       return new Promise(function(resolve, reject) {
         if (_this.config.host.is_sock) {

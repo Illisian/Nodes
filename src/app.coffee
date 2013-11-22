@@ -16,6 +16,20 @@ http = require "http";
 
 Promise = require "bluebird"
 Promise.longStackTraces();
+###*
+* This is the bootstrap class for the application, and the main handler for express requests
+*
+* @class MainApp
+* @constructor
+###
+
+###*
+* This is init method called on startup
+*
+* @method init
+* @return {Void} Returns nothing
+###
+
 
 class MainApp
   constructor: () ->
@@ -146,7 +160,7 @@ class MainApp
       else
         resolve();
   
-  unixSockFree: () =>
+  unixSockUnlink: () =>
     return new Promise (resolve, reject) =>
       if @config.host.is_sock
         @log "setting chmod 777 on unix sock - #{@config.host.port}";
