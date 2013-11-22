@@ -25,33 +25,45 @@ module.exports = (grunt) ->
         'src/**/*'
         'package.json'
       ]
-      tasks: ['default']
+      tasks: ['watchnbuild']
     plato:
       default:
         options: 
           exclude: new RegExp("^.*public/*.*.js$", "i")
         files:
           'report/': ['build/**/*.js']
+    forever:
+      options:
+        index: 'build/app.js'
+        logDir: 'logs'
+        command: 'node --debug=10002'
 
-    foreverMulti:
-      dev:
-        action: 'restart',
-        file: 'build/app.js'
+#    nodemon:
+#      dev:
+#        options:
+#          args: ['dev']
+#          file: 'build/app.js'
+#          nodeArgs: ['--debug=10002']
+#          watchedExtensions: ['js'],
+#          watchedFolders: ['build'],
+#          delay: 20
+#        #env: 
+#        #  PORT: '8282'
     'node-inspector':
       dev:
         options:
           'web-port': 1337,
           'web-host': 'localhost',
-          'debug-port': 5858,
+          'debug-port': 10002,
           'save-live-edit': true,
           'stack-trace-limit': 4
     concurrent:
       run:
-        tasks: ['forever:restart', 'watch']
+        tasks: ['nodemon']
         options:
           logConcurrentOutput: true
       debug:
-        tasks: ['forever:restart', 'watch', 'node-inspector']
+        tasks: ['watch', 'node-inspector']
         options:
           logConcurrentOutput: true
     shell: 
@@ -63,20 +75,14 @@ module.exports = (grunt) ->
         options:
           stdout: true
         command: 'projectz compile'
-
-#    codo:
-#      options:
-#        # Task-specific options go here.
-#    nodemon:
-#      dev:
-#        options:
-#          args: ['dev']
-#          file: 'build/app.js'
-#          #nodeArgs: ['--debug']
-#          watchedExtensions: ['js'],
-#          watchedFolders: ['build']
-#        #env: 
-#        #  PORT: '8282'
+      'forever-stop':
+        options:
+          stdout: true
+        command: "forever stop build/app.js"
+      'forever-start':
+        options:
+          stdout: true
+        command: "forever start -c 'node --debug=10002' build/app.js"
 
   grunt.loadNpmTasks 'grunt-shell';
   grunt.loadNpmTasks 'grunt-contrib-copy';
@@ -86,16 +92,19 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-plato';
   grunt.loadNpmTasks 'grunt-install-dependencies';
   grunt.loadNpmTasks 'grunt-concurrent'
-  grunt.loadNpmTasks 'grunt-forever-multi';
   grunt.loadNpmTasks 'grunt-node-inspector';
-  #grunt.loadNpmTasks 'grunt-codo'
+  grunt.loadNpmTasks 'grunt-forever'
   
   
-  grunt.registerTask 'test', 'Runs build and test', [ 'install-dependencies', 'clean', 'copy', 'coffee' ]
-  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato','shell:projectz', 'shell:codo' ]
+  grunt.registerTask 'test', 'Runs build and test', [ 'default' ]
+  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'build', 'doc' ]
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
-  grunt.registerTask 'run', 'Clears all files from the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato', 'concurrent:run' ]
-  grunt.registerTask 'debug', 'Clears all files from the build directory.', [ 'install-dependencies', 'clean', 'copy', 'coffee', 'plato', 'concurrent:debug' ]
+  grunt.registerTask 'run', 'Clears all files from the build directory.', [ 'default', 'concurrent:run' ]
+  grunt.registerTask 'debug', 'Clears all files from the build directory.', [ 'watchnbuild', 'concurrent:debug' ]
   
+  grunt.registerTask 'watchnbuild', 'Watch and Build', [ 'shellforever:stop', 'build', 'doc', 'forever:start' ]
+
+  grunt.registerTask 'build', 'Builds the application', [ 'install-dependencies', 'clean', 'copy', 'coffee' ]
+  grunt.registerTask 'doc', 'Builds the application documentation', [ 'plato', 'shell:projectz', 'shell:codo' ]
  
   

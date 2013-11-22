@@ -91,7 +91,7 @@
 <div class="container">
   <div class="row">
     <textarea id="file-source" class="col-md-12">(function() {
-  var BaseControl, Promise, Promises, events,
+  var Control, Promise, Promises, events,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Promise = require(&#039;bluebird&#039;);
@@ -100,24 +100,24 @@
 
   events = require(&#039;./events&#039;);
 
-  BaseControl = (function() {
-    function BaseControl(options) {
+  Control = (function() {
+    function Control(options) {
       this.process = __bind(this.process, this);
       var _ref;
       this.core = options.core, this.site = options.site, this.page = options.page, this.controlData = options.controlData, this.workingDir = options.workingDir, this.filePath = options.filePath, this.attr = options.attr, this.target = options.target;
       _ref = this.core, this.log = _ref.log, this.db = _ref.db;
     }
 
-    BaseControl.prototype.process = function(req, res, isPostBack) {
+    Control.prototype.process = function(req, res, isPostBack) {
       var _this = this;
       return new Promise(function(resolve, reject) {});
     };
 
-    return BaseControl;
+    return Control;
 
   })();
 
-  module.exports = BaseControl;
+  module.exports = Control;
 
 }).call(this);</textarea>
   </div>

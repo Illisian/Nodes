@@ -6,7 +6,7 @@ events = require './events'
 
 #util = require 'util';
 
-class BaseControl
+class Control
   constructor: (options) ->
     #console.log "base", util.inspect options
     {@core, @site, @page, @controlData, @workingDir, @filePath, @attr, @target} = options;
@@ -18,4 +18,4 @@ class BaseControl
 
   
 
-module.exports = BaseControl;
+module.exports = Control;
