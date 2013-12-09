@@ -3,7 +3,7 @@ consolidate = require 'consolidate'
 Promise = require 'bluebird'
 extend = require 'extend';
 cheerio = require 'cheerio';
-Control = require './control'
+Control = require '../control'
 
 class templateControl extends Control
   constructor: () ->

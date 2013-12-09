@@ -1,12 +1,12 @@
 Promise = require "bluebird";
-Promises = require "../lib/Promises";
-Module = require "../lib/module";
+Promises = require "../Promises";
+Module = require "../module";
 util = require "util"
 
 fs = require "fs";
 coffee = require "coffee-script"
 paths = require "path";
-cacheStore = require "../lib/cacheStore";
+cacheStore = require "../cacheStore";
 
 exists = Promise.promisify(require("fs").exists);
 
@@ -14,7 +14,7 @@ class Compiler extends Module
   donotcache: true
   onSiteLoad: (req, res, site) =>
     return new Promise (resolve, reject) =>
-      site.mod_compiler = new cacheStore();
+      #site.mod_compiler = new cacheStore();
       resolve();
 
   onSiteRequestStart: (req, res, site) =>

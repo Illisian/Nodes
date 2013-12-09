@@ -1,5 +1,5 @@
 Promise = require("bluebird");
-TemplateControl = require("../templateControl");
+TemplateControl = require("./templateControl");
 
 class Sublayout extends TemplateControl
 

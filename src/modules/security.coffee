@@ -1,6 +1,6 @@
 Promise = require "bluebird";
 
-Module = require "../lib/module";
+Module = require "../module";
 
 util = require "util"
 GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;

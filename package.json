@@ -3,8 +3,9 @@
   "version": "0.1.1",
   "engine": "node >= 0.10",
   "private": true,
+  "main": "./build/",
   "scripts": {
-    "start": "forever --watch build/app.js",
+    "start": "forever --watch build/app.js --watchDirectory build/ --sourceDir src/",
     "test": "grunt test --verbose"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 Promise = require "bluebird";
-Module = require "../lib/module";
+Module = require "../module";
 class Fields extends Module
 
   onPageRequestFinish: (res, req, page) =>

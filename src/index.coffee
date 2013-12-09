@@ -1,15 +1,14 @@
-config = require "./config"
-database = require "./lib/database";
-func = require "./lib/func";
-cache = require "./lib/cache";
-site = require "./lib/site";
-Promises = require "./lib/Promises";
-cacheStore = require "./lib/cacheStore";
+database = require "./database";
+func = require "./func";
+cache = require "./cache";
+site = require "./site";
+Promises = require "./Promises";
+cacheStore = require "./cacheStore";
 
 #extend = require 'extend'
 util = require 'util'
 #paths = require 'path'
-
+connect = require "connect";
 express = require "express";
 http = require "http";
 #fs = require "fs";
@@ -32,9 +31,7 @@ Promise.longStackTraces();
 
 
 class MainApp
-  constructor: () ->
-    @config = new config;
-    @sysmodulePath = "#{@config.base_dir}/modules/"; 
+  constructor: (@config) ->
     @db = new database @config
     @log = func.log;
     @debug = func.log;
@@ -51,19 +48,20 @@ class MainApp
     }
     @modules = []
     for m in @config.modules
-      @modules.push @loadModule("#{@sysmodulePath}#{m}")
-  init: () =>
-    @unixSockUnlink()
-      .then(@expressSetup)
-      .then(@unixSockFree)
-      .then(@setupData)
-      .then(@loadApps)
-      .then(@finished)
-      .catch (err) =>
-        @log "An Error has occurred while running init", err;
+      @modules.push @loadModule(m);
 
-  finished: () =>
-    console.log "nodes cms has started";
+  init: () =>
+    return new Promise (resolve, reject) =>
+      return @unixSockUnlink()
+        .then(@expressSetup)
+        .then(@unixSockFree)
+        .then(@setupData)
+        .then () =>
+          console.log "nodes cms has started";
+          return resolve();
+        .catch (err) =>
+          @log "An Error has occurred while running init", err;
+
 
   expressSetup: () =>
     return new Promise (resolve, reject) =>
@@ -81,31 +79,34 @@ class MainApp
         @server = http.createServer(@express)
         @server.listen @express.get("port"), () =>
           @events.onAppStart.chain(@express, @server).then () =>
-          @log "express is now listening on #{@config.host.port}";
-          return resolve();
+            @log "express is now listening on #{@config.host.port}";
+            return resolve();
       , reject
 
 
   setupData: () =>
-    return @db.init()
-      .then(@db.clearDb)
-      .then () ->
-        func.log "database init has finished";
+    return new Promise (resolve, reject) =>
+      return @db.init()
+        .then () ->
+          func.log "database init has finished";
+          return resolve();
       
   
-  loadApps: () =>
-    return new Promise (resolve, reject) =>
-      func.log "loading apps";
-      promises = [];
-      for app in @config.apps
-        path = "#{@config.base_dir}/#{app}/app"
-        @log "Loading app - #{app} @ #{path}";
-        a = require path;
-        @cache.apps[app] = new a(this);
-        promises.push(@cache.apps[app].init());
-      
-      Promise.all(promises).then () =>
-        resolve();
+  #loadApps: () =>
+  #  return new Promise (resolve, reject) =>
+  #    if not @config.apps?
+  #      return resolve();
+  #    func.log "loading apps";
+  #    promises = [];
+  #    for app in @config.apps
+  #      path = "#{@config.base_dir}/#{app}/app"
+  #      @log "Loading app - #{app} @ #{path}";
+  #      a = require path;
+  #      @cache.apps[app] = new a(this);
+  #      promises.push(@cache.apps[app].init());
+  #    
+  #    Promise.all(promises).then () =>
+  #      resolve();
  
   processRequest: (req, res, next) =>
     @loadSite(req, res).then (site) =>
@@ -141,14 +142,24 @@ class MainApp
             return newsite.events.chain("onSiteLoad",req,res,newsite).then () =>
               resolve(newsite);
         , reject
-  loadModule: (path) =>
-    @log "Loading Module #{path}"
-    mod = @cache.getControl(path);
+        
+  loadModule: (mod) =>
+    @log "Loading Module", mod
     newmod = new mod({ core: this });
     for event of @events
       if newmod[event]?
         @log "loadModule - event - #{event}";
         @events[event].add newmod[event]
+    return newmod;
+    
+  #loadModuleByPath: (path) =>
+  #  @log "Loading Module #{path}"
+  #  mod = @cache.getControl(path);
+  #  newmod = new mod({ core: this });
+  #  for event of @events
+  #    if newmod[event]?
+  #      @log "loadModuleByPath - event - #{event}";
+  #      @events[event].add newmod[event]
   
   unixSockUnlink: () =>
     return new Promise (resolve, reject) =>
@@ -171,4 +182,4 @@ class MainApp
         resolve();
   
 
-new MainApp().init();
+module.exports = MainApp;

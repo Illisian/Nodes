@@ -1,10 +1,10 @@
 Promise = require "bluebird";
 url = require 'url'
-Module = require "../lib/module";
-Promises = require "../lib/Promises";
+Module = require "../module";
+Promises = require "../Promises";
 util = require "util"
 SessionSockets = require './lib/session.socket.io'
-cacheStore = require '../lib/cacheStore'
+cacheStore = require '../cacheStore'
 
 class Sockets extends Module
   constructor: (@options) ->

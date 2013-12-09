@@ -25,7 +25,7 @@ module.exports = (grunt) ->
         'src/**/*'
         'package.json'
       ]
-      tasks: ['watchnbuild']
+      tasks: ['default']
     plato:
       default:
         options: 
@@ -97,7 +97,7 @@ module.exports = (grunt) ->
   
   
   grunt.registerTask 'test', 'Runs build and test', [ 'default' ]
-  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'build', 'doc' ]
+  grunt.registerTask 'default', 'Compiles all of the assets and copies the files to the build directory.', [ 'build' ]
   grunt.registerTask 'clear', 'Clears all files from the build directory.', [ 'clean' ]
   grunt.registerTask 'run', 'Clears all files from the build directory.', [ 'default', 'concurrent:run' ]
   grunt.registerTask 'debug', 'Clears all files from the build directory.', [ 'watchnbuild', 'concurrent:debug' ]

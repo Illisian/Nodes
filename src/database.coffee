@@ -88,7 +88,8 @@ class Database
       @db = mongoose.connection;
       @db.on('error', console.error.bind(console, 'connection error:'));
       @db.once 'open', () =>
-        resolve();
+        console.log "Database connection is open";
+        return resolve();
 
   clearDb: () =>
     return new Promise (resolve, reject) =>
@@ -96,9 +97,8 @@ class Database
       .then(@logic.page.remove({}))
       .then(@logic.layout.remove({}))
       .then(@logic.sublayout.remove({}))
-      .then(() ->
+      .then () ->
         func.log("Database has been cleared!");
-        resolve();
-      )
+        return resolve();
 
 module.exports = Database;

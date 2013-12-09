@@ -44,10 +44,10 @@ class Site
     @modules = [];
     
     for m in @config.modules #not sure about using the system event object to inherit the loaded modules. 
-      @modules.push @loadModule("#{@core.sysmodulePath}#{m}")
+      @modules.push @loadModule(m)
     
     for module in @siteData.modules
-      result = @loadModule("#{@modulePath}#{module}");
+      result = @loadModule(require("#{module}"));
       @modules.push result;
 
   process: (req, res) =>
@@ -97,8 +97,7 @@ class Site
         else
         return reject();
   
-  loadModule: (path) =>
-    mod = @core.cache.getControl(path);
+  loadModule: (mod) =>
     newmod = new mod({ core: @core, site: this });
     @events.add(newmod);
     
