@@ -128,7 +128,7 @@ class Magician extends Module
     
   loadPageLayout: (page) =>
     return new Promise (resolve, reject) =>
-      @log "Magician - loadPageLayout - start", page.pageData;
+      @log "Magician - loadPageLayout - start";
       return @db.logic.layout.findOne({ _id: page.pageData.layout.id }).then (layoutData) =>
         if layoutData?
           return @loadControl(layoutData.name, page.site.layoutPath, layoutData, page).then (layout) =>

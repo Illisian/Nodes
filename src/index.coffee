@@ -139,12 +139,12 @@ class MainApp
           @log "Storing Site"
           return @sites.put(key, uri.hostname, newsite).then () =>
             @log "fireing the onSiteLoad Events"
-            return newsite.events.chain("onSiteLoad",req,res,newsite).then () =>
+            return newsite.events.chain("onSiteLoad",req,res, newsite).then () =>
               resolve(newsite);
         , reject
         
   loadModule: (mod) =>
-    @log "Loading Module", mod
+    #@log "Loading Module", mod
     newmod = new mod({ core: this });
     for event of @events
       if newmod[event]?
