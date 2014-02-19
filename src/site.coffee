@@ -42,15 +42,16 @@ class Site
       @static.push Promise.promisify(express.static(path))
 
     @modules = [];
-    @log "Config Modules", @siteData.modules
+    #@log "Config Modules", @siteData.modules
     for m in @config.modules #not sure about using the system event object to inherit the loaded modules. 
       @modules.push @loadModule(m)
     
-    @log "SiteData", @siteData
-    
     for module in @siteData.modules
-      
-      result = @loadModule(require("#{module}"));
+      str = "#{@config.base_dir}#{module}";
+      @log "Loading Module - #{str}";
+      mod = require(str);
+      @log "SiteData Module", mod;
+      result = @loadModule(mod);
       @modules.push result;
 
   process: (req, res) =>
@@ -101,7 +102,7 @@ class Site
         return reject();
   
   loadModule: (mod) =>
-    #@log "Loading Module", mod;
+    @log "Loading Module", mod;
     newmod = new mod({ core: @core, site: this });
     @events.add(newmod);
     
